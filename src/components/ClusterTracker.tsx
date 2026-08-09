@@ -65,6 +65,89 @@ const iconMap: Record<string, React.ReactNode> = {
   Code: <Code className="w-5 h-5 text-indigo-500" />,
 };
 
+interface RecommendationCardProps {
+  course: Course;
+  reasonFa: string;
+  reasonEn: string;
+  clusterTitleFa: string;
+  lang: 'fa' | 'en' | 'dual';
+  onUpdateStatus: (courseId: string, status: CourseStatus) => void;
+  onOpenCourseModal: (course: Course) => void;
+}
+
+const RecommendationCard: React.FC<RecommendationCardProps> = ({
+  course,
+  reasonFa,
+  reasonEn,
+  lang,
+  onUpdateStatus,
+  onOpenCourseModal,
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const reasonText = lang === 'en' ? reasonEn : reasonFa;
+  const isLong = reasonText.length > 55 || reasonText.includes('\n');
+
+  return (
+    <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3.5 space-y-2 flex flex-col justify-between hover:bg-white/15 transition">
+      <div>
+        <div className="flex items-center justify-between text-[11px] font-mono text-indigo-200">
+          <span className="font-bold">{course.id}</span>
+          <span className="px-1.5 py-0.5 rounded bg-indigo-500/30 text-white font-sans">
+            {course.credits} {lang === 'en' ? 'credits' : 'واحد'}
+          </span>
+        </div>
+        <h3 className="font-bold text-sm text-white mt-1">
+          {lang === 'en' ? course.titleEn : course.titleFa}
+        </h3>
+
+        <div className="mt-1.5">
+          <p
+            className={`text-[11px] text-amber-200/95 leading-relaxed whitespace-pre-line transition-all ${
+              isExpanded
+                ? 'bg-black/25 p-2 rounded-lg border border-amber-200/20 text-amber-100 font-medium'
+                : 'line-clamp-2'
+            }`}
+          >
+            {reasonText}
+          </p>
+
+          {isLong && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-1 text-[10px] text-indigo-200 hover:text-white font-semibold underline underline-offset-2 flex items-center gap-0.5 focus:outline-hidden cursor-pointer"
+            >
+              {isExpanded
+                ? lang === 'en' ? 'Show Less' : 'کمتر...'
+                : lang === 'en' ? 'Show More...' : 'مشاهده متن کامل...'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 pt-2 border-t border-white/10 mt-2">
+        <button
+          type="button"
+          onClick={() => onUpdateStatus(course.id, 'IN_PROGRESS')}
+          className="flex-1 py-1.5 px-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>{lang === 'en' ? 'Mark as In Progress' : 'افزودن به ترم جاری'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onOpenCourseModal(course)}
+          className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition cursor-pointer"
+          title={lang === 'en' ? 'View Details' : 'مشاهده جزئیات'}
+        >
+          <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const ClusterTracker: React.FC<ClusterTrackerProps> = ({
   progress,
   onUpdateStatus,
@@ -79,7 +162,7 @@ export const ClusterTracker: React.FC<ClusterTrackerProps> = ({
   const targetClusterIds = progress.targetClusterIds || (progress.targetClusterId ? [progress.targetClusterId] : []);
 
   const clusterProgresses = calculateClusterProgresses(progress.courseStatuses);
-  const recommendations = getRecommendedCourses(progress.courseStatuses, targetClusterIds[0]);
+  const recommendations = getRecommendedCourses(progress.courseStatuses, targetClusterIds);
 
   // Sort cluster progress: selected target clusters first, then highest percentage
   const sortedClusters = [...clusterProgresses].sort((a, b) => {
@@ -183,41 +266,16 @@ export const ClusterTracker: React.FC<ClusterTrackerProps> = ({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {recommendations.map(({ course, reasonFa, reasonEn, clusterTitleFa }) => (
-              <div
+              <RecommendationCard
                 key={course.id}
-                className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3.5 space-y-2 flex flex-col justify-between hover:bg-white/15 transition"
-              >
-                <div>
-                  <div className="flex items-center justify-between text-[11px] font-mono text-indigo-200">
-                    <span className="font-bold">{course.id}</span>
-                    <span className="px-1.5 py-0.5 rounded bg-indigo-500/30 text-white">{course.credits} {lang === 'en' ? 'credits' : 'واحد'}</span>
-                  </div>
-                  <h3 className="font-bold text-sm text-white mt-1">
-                    {lang === 'en' ? course.titleEn : course.titleFa}
-                  </h3>
-                  <p className="text-[11px] text-amber-200/90 mt-1 line-clamp-2">
-                    {lang === 'en' ? reasonEn : reasonFa}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                  <button
-                    onClick={() => onUpdateStatus(course.id, 'IN_PROGRESS')}
-                    className="flex-1 py-1.5 px-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>{lang === 'en' ? 'Mark as In Progress' : 'افزودن به ترم جاری'}</span>
-                  </button>
-
-                  <button
-                    onClick={() => onOpenCourseModal(course)}
-                    className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
-                    title={lang === 'en' ? 'View Details' : 'مشاهده جزئیات'}
-                  >
-                    <ArrowLeft className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
-                  </button>
-                </div>
-              </div>
+                course={course}
+                reasonFa={reasonFa}
+                reasonEn={reasonEn}
+                clusterTitleFa={clusterTitleFa}
+                lang={lang}
+                onUpdateStatus={onUpdateStatus}
+                onOpenCourseModal={onOpenCourseModal}
+              />
             ))}
           </div>
         )}

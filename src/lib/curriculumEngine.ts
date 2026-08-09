@@ -332,55 +332,131 @@ export function getRecommendedCourses(
     ? [targetClusterIds]
     : [];
 
-  let focusClusters = clusterProgresses.filter((cp) => targetIds.includes(cp.cluster.id));
-  if (focusClusters.length === 0) {
-    // Pick top incomplete clusters
-    const sorted = [...clusterProgresses]
-      .filter((cp) => cp.percentage < 100)
-      .sort((a, b) => b.percentage - a.percentage);
-    focusClusters = sorted.slice(0, 2);
-  }
+  const targetClusters = KNOWLEDGE_CLUSTERS.filter((c) => targetIds.includes(c.id));
 
-  if (focusClusters.length === 0 && clusterProgresses.length > 0) {
-    focusClusters = [clusterProgresses[0]];
-  }
+  // Items to recommend
+  const candidates: {
+    course: Course;
+    reasonFa: string;
+    reasonEn: string;
+    clusterTitleFa: string;
+    score: number;
+  }[] = [];
 
-  const recommendations: { course: Course; reasonFa: string; reasonEn: string; clusterTitleFa: string }[] = [];
+  if (targetClusters.length > 0) {
+    // Mode A: User has selected specific Target Tracks
+    COURSES.forEach((course) => {
+      // Must not be passed
+      if (statuses[course.id] === 'PASSED') return;
 
-  focusClusters.forEach((focusCluster) => {
-    // Look for unpassed courses in focus cluster whose prerequisites ARE met
-    focusCluster.missingCourseIds.forEach((courseId) => {
-      const course = getCourseById(courseId);
-      if (!course || statuses[course.id] === 'PASSED') return;
-      if (recommendations.some((r) => r.course.id === course.id)) return;
-
+      // Check prerequisites
       const warnings = validateCourseRules(course, statuses);
       const prereqMissing = warnings.some((w) => w.type === 'prerequisite_missing');
+      if (prereqMissing) return;
 
-      if (!prereqMissing) {
-        recommendations.push({
+      // Check which target clusters contain this course
+      const matchingClusters = targetClusters.filter((tc) => tc.courseIds.includes(course.id));
+      if (matchingClusters.length > 0) {
+        const overlapCount = matchingClusters.length;
+        
+        let reasonFa = '';
+        let reasonEn = '';
+        let clusterTitleFa = matchingClusters[0].titleFa;
+
+        if (overlapCount > 1) {
+          const clusterNamesFa = matchingClusters.map((c) => `«${c.titleFa}»`).join(' و ');
+          const clusterNamesEn = matchingClusters.map((c) => `"${c.titleEn}"`).join(' & ');
+          reasonFa = `⭐ همپوشانی بین ${overlapCount} گرایش (${clusterNamesFa})\nپیش‌نیازها تکمیل شده.`;
+          reasonEn = `⭐ Overlap across ${overlapCount} tracks (${clusterNamesEn})\nPrerequisites met.`;
+        } else {
+          reasonFa = `درس کلیدی گرایش هدف «${matchingClusters[0].titleFa}»\nپیش‌نیازها تکمیل شده.`;
+          reasonEn = `Key course for target track "${matchingClusters[0].titleEn}"\nPrerequisites met.`;
+        }
+
+        // Score formulation: Overlap count gets highest weight, then tree core priority
+        const score = overlapCount * 1000 + (course.type === 'tree' ? 100 : 0) + (10 - (course.term || 5));
+
+        candidates.push({
           course,
-          clusterTitleFa: focusCluster.cluster.titleFa,
-          reasonFa: `تکمیل‌کننده گرایش تخصصی «${focusCluster.cluster.titleFa}» (پیش‌نیازها آماده هستند).`,
-          reasonEn: `Completes the "${focusCluster.cluster.titleEn}" track (prerequisites fulfilled).`,
+          reasonFa,
+          reasonEn,
+          clusterTitleFa,
+          score,
         });
       }
     });
-  });
 
-  // Also check other unpassed tree core courses in early terms that are unlocked
-  COURSES.filter((c) => c.type === 'tree' && statuses[c.id] === 'NOT_TAKEN').forEach((c) => {
-    if (recommendations.some((r) => r.course.id === c.id)) return;
-    const warnings = validateCourseRules(c, statuses);
-    if (!warnings.some((w) => w.type === 'prerequisite_missing')) {
-      recommendations.push({
-        course: c,
-        clusterTitleFa: 'دروس عمومی و پایه',
-        reasonFa: `درس پایه ترم ${c.term || 'آزاد'} نمودار درختی که پیش‌نیازهایش را پاس کرده‌اید.`,
-        reasonEn: `Core tree course for term ${c.term || 'any'} with satisfied prerequisites.`,
+    // Sort candidates by score descending
+    candidates.sort((a, b) => b.score - a.score);
+
+    // If fewer than 6, add unlocked core tree courses
+    if (candidates.length < 6) {
+      COURSES.filter((c) => c.type === 'tree' && statuses[c.id] === 'NOT_TAKEN').forEach((c) => {
+        if (candidates.some((item) => item.course.id === c.id)) return;
+        const warnings = validateCourseRules(c, statuses);
+        if (!warnings.some((w) => w.type === 'prerequisite_missing')) {
+          candidates.push({
+            course: c,
+            clusterTitleFa: 'دروس عمومی و پایه',
+            reasonFa: `درس پایه ترم ${c.term || 'آزاد'} نمودار درختی\nپیش‌نیازها تکمیل شده.`,
+            reasonEn: `Core tree course for term ${c.term || 'any'}\nPrerequisites met.`,
+            score: 10,
+          });
+        }
       });
     }
-  });
+  } else {
+    // Mode B: No target tracks selected yet - Pick top incomplete clusters by progress
+    let focusClusters = clusterProgresses
+      .filter((cp) => cp.percentage < 100)
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 3);
 
-  return recommendations.slice(0, 6);
+    if (focusClusters.length === 0 && clusterProgresses.length > 0) {
+      focusClusters = [clusterProgresses[0]];
+    }
+
+    focusClusters.forEach((focusCluster) => {
+      focusCluster.missingCourseIds.forEach((courseId) => {
+        const course = getCourseById(courseId);
+        if (!course || statuses[course.id] === 'PASSED') return;
+        if (candidates.some((item) => item.course.id === course.id)) return;
+
+        const warnings = validateCourseRules(course, statuses);
+        const prereqMissing = warnings.some((w) => w.type === 'prerequisite_missing');
+
+        if (!prereqMissing) {
+          candidates.push({
+            course,
+            clusterTitleFa: focusCluster.cluster.titleFa,
+            reasonFa: `تکمیل‌کننده گرایش تخصصی «${focusCluster.cluster.titleFa}»\nپیش‌نیازها تکمیل شده.`,
+            reasonEn: `Completes the "${focusCluster.cluster.titleEn}" track\nPrerequisites met.`,
+            score: focusCluster.percentage,
+          });
+        }
+      });
+    });
+
+    // Also append core tree courses
+    COURSES.filter((c) => c.type === 'tree' && statuses[c.id] === 'NOT_TAKEN').forEach((c) => {
+      if (candidates.some((item) => item.course.id === c.id)) return;
+      const warnings = validateCourseRules(c, statuses);
+      if (!warnings.some((w) => w.type === 'prerequisite_missing')) {
+        candidates.push({
+          course: c,
+          clusterTitleFa: 'دروس عمومی و پایه',
+          reasonFa: `درس پایه ترم ${c.term || 'آزاد'} نمودار درختی که پیش‌نیازهایش آماده است.`,
+          reasonEn: `Core tree course for term ${c.term || 'any'} with satisfied prerequisites.`,
+          score: 5,
+        });
+      }
+    });
+  }
+
+  return candidates.slice(0, 6).map(({ course, reasonFa, reasonEn, clusterTitleFa }) => ({
+    course,
+    reasonFa,
+    reasonEn,
+    clusterTitleFa,
+  }));
 }

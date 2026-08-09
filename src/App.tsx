@@ -170,13 +170,15 @@ export default function App() {
         onOpenWarnings={() => setShowWarningsModal(true)}
       />
 
-      {/* Graduation Stats & Requirement Indicators */}
-      <ProgressSummary
-        stats={stats}
-        progress={progress}
-        onUpdateTargetCluster={handleUpdateTargetCluster}
-        lang={lang}
-      />
+      {/* Graduation Stats & Requirement Indicators (Shown only on Chart / Flowchart Tab) */}
+      {activeTab === 'flowchart' && (
+        <ProgressSummary
+          stats={stats}
+          progress={progress}
+          onUpdateTargetCluster={handleUpdateTargetCluster}
+          lang={lang}
+        />
+      )}
 
       {/* Main Tab Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
