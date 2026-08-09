@@ -241,7 +241,7 @@ export const COURSES: Course[] = [
     term: 3,
     prerequisites: ['40244', '40115'],
     corequisites: [],
-    clusters: ['algorithms', 'data_science', 'data_eng', 'ai'],
+    clusters: ['algorithms', 'data_science', 'data_eng', 'machine_learning'],
   },
   {
     id: '40211',
@@ -277,7 +277,7 @@ export const COURSES: Course[] = [
     term: 4,
     prerequisites: ['22015'],
     corequisites: [],
-    clusters: ['ai', 'machine_learning', 'data_science', 'data_eng', 'nlp', 'bioinformatics', 'neuroscience', 'vision'],
+    clusters: ['machine_learning', 'data_science', 'data_eng', 'nlp', 'bioinformatics', 'neuroscience', 'vision'],
   },
   {
     id: '40323',
@@ -393,7 +393,7 @@ export const COURSES: Course[] = [
     term: 5,
     prerequisites: ['40254'],
     corequisites: ['40181'],
-    clusters: ['ai', 'machine_learning', 'nlp', 'vision', 'robotics', 'bioinformatics', 'neuroscience'],
+    clusters: ['machine_learning', 'nlp', 'vision', 'robotics', 'bioinformatics', 'neuroscience'],
   },
   {
     id: '40384',
@@ -785,8 +785,8 @@ export const COURSES: Course[] = [
   },
   {
     id: '40432',
-    titleFa: 'رایانش چندرسانه‌ای',
-    titleEn: 'Multimedia Computing',
+    titleFa: 'رایانش چندهسته‌ای',
+    titleEn: 'Multicore Computing',
     credits: 3,
     type: 'specialized',
     prerequisites: ['40244', '40323'],
@@ -853,7 +853,7 @@ export const COURSES: Course[] = [
     type: 'specialized',
     prerequisites: ['40181', '40282'],
     corequisites: [],
-    clusters: ['machine_learning', 'ai', 'vision', 'nlp', 'secure_computing', 'data_science'],
+    clusters: ['machine_learning', 'vision', 'nlp', 'secure_computing', 'data_science'],
   },
 
   // ================= GENERAL ELECTIVES (TABLE 2 - جدول دروس اختیاری) =================
@@ -1140,14 +1140,14 @@ export const KNOWLEDGE_CLUSTERS: KnowledgeCluster[] = [
     iconName: 'Cpu',
   },
   {
-    id: 'ai',
-    titleFa: 'هوش مصنوعی',
-    titleEn: 'Artificial Intelligence',
-    descriptionFa: 'مبانی سامانه‌های هوشمند، جستجو، منطق، یادگیری عمیق و کاربرد در حل مسائل پیچیده.',
-    descriptionEn: 'Fundamentals of intelligent systems, search, logic, deep learning, and complex problem solving.',
-    courseIds: ['40254', '40181', '40417', '40717', '40384'],
-    extraCoursesTextFa: '+ یک درس از سبد هوش مصنوعی و داده',
-    extraCoursesTextEn: '+ One elective from AI & Data basket',
+    id: 'machine_learning',
+    titleFa: 'یادگیری ماشین',
+    titleEn: 'Machine Learning',
+    descriptionFa: 'الگوریتم‌های یادگیری نظارت‌شده و نظارت‌نشده، یادگیری عمیق، مدل‌های آماری و بهینه‌سازی.',
+    descriptionEn: 'Supervised & unsupervised learning, deep learning, statistical models, and optimization.',
+    courseIds: ['40282', '40181', '40417', '40717'],
+    extraCoursesTextFa: '+ مبانی علم داده‌ها + بهینه‌سازی محدب+',
+    extraCoursesTextEn: '+ Principles of Data Science + Convex Optimization+',
     iconName: 'Brain',
   },
   {
