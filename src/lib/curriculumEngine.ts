@@ -1,0 +1,386 @@
+import { COURSES, KNOWLEDGE_CLUSTERS } from '../data/curriculumData';
+import {
+  ClusterProgress,
+  Course,
+  CourseStatus,
+  GraduationStats,
+  RuleValidation,
+  StudentProgress,
+} from '../types';
+
+export const STORAGE_KEY = 'ce_curriculum_tracker_v1';
+
+export function getCourseById(id: string): Course | undefined {
+  return COURSES.find((c) => c.id === id);
+}
+
+export function getInitialProgress(): StudentProgress {
+  const courseStatuses: Record<string, CourseStatus> = {};
+  COURSES.forEach((c) => {
+    courseStatuses[c.id] = 'NOT_TAKEN';
+  });
+
+  return {
+    courseStatuses,
+    courseGrades: {},
+    plannedSemesters: [
+      {
+        id: 'sem_1',
+        termNumber: 1,
+        titleFa: 'ترم ۱ پیش‌فرض',
+        titleEn: 'Default Term 1',
+        courseIds: ['22015', '24011', '40153', '40108', '33018', '30003', '31123'],
+      },
+    ],
+    studentName: 'دانشجوی مهندسی کامپیوتر',
+    entryYear: 1402,
+  };
+}
+
+export function loadSavedProgress(): StudentProgress {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return getInitialProgress();
+    const parsed = JSON.parse(raw);
+    // Ensure all current courses exist in statuses
+    const initial = getInitialProgress();
+    const mergedStatuses = { ...initial.courseStatuses, ...(parsed.courseStatuses || {}) };
+    return {
+      ...initial,
+      ...parsed,
+      courseStatuses: mergedStatuses,
+    };
+  } catch (e) {
+    console.error('Failed to load progress from localStorage', e);
+    return getInitialProgress();
+  }
+}
+
+export function saveProgress(progress: StudentProgress): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  } catch (e) {
+    console.error('Failed to save progress to localStorage', e);
+  }
+}
+
+/**
+ * Validate prerequisite and corequisite rules for a target course given current course statuses.
+ */
+export function validateCourseRules(
+  course: Course,
+  statuses: Record<string, CourseStatus>
+): RuleValidation[] {
+  const warnings: RuleValidation[] = [];
+
+  // Check prerequisites: Must be PASSED
+  const missingPrereqs: string[] = [];
+  course.prerequisites.forEach((pId) => {
+    if (statuses[pId] !== 'PASSED') {
+      missingPrereqs.push(pId);
+    }
+  });
+
+  if (missingPrereqs.length > 0) {
+    const missingNamesFa = missingPrereqs
+      .map((id) => getCourseById(id)?.titleFa || id)
+      .join('، ');
+    const missingNamesEn = missingPrereqs
+      .map((id) => getCourseById(id)?.titleEn || id)
+      .join(', ');
+
+    warnings.push({
+      courseId: course.id,
+      type: 'prerequisite_missing',
+      missingPrereqs,
+      missingCoreqs: [],
+      messageFa: `پیش‌نیازهای این درس (${missingNamesFa}) هنوز پاس نشده‌اند.`,
+      messageEn: `Prerequisites for this course (${missingNamesEn}) have not been passed yet.`,
+    });
+  }
+
+  // Check corequisites: Must be PASSED or IN_PROGRESS
+  const missingCoreqs: string[] = [];
+  course.corequisites.forEach((cId) => {
+    const status = statuses[cId];
+    if (status !== 'PASSED' && status !== 'IN_PROGRESS') {
+      missingCoreqs.push(cId);
+    }
+  });
+
+  if (missingCoreqs.length > 0) {
+    const missingNamesFa = missingCoreqs
+      .map((id) => getCourseById(id)?.titleFa || id)
+      .join('، ');
+    const missingNamesEn = missingCoreqs
+      .map((id) => getCourseById(id)?.titleEn || id)
+      .join(', ');
+
+    warnings.push({
+      courseId: course.id,
+      type: 'corequisite_missing',
+      missingPrereqs: [],
+      missingCoreqs,
+      messageFa: `همنیازهای این درس (${missingNamesFa}) باید همزمان یا قبل‌تر اخذ شوند.`,
+      messageEn: `Corequisites (${missingNamesEn}) must be taken concurrently or prior.`,
+    });
+  }
+
+  return warnings;
+}
+
+/**
+ * Calculate Graduation Statistics and Counters
+ */
+export function calculateGraduationStats(
+  statuses: Record<string, CourseStatus>,
+  grades: Record<string, number> = {}
+): GraduationStats {
+  let totalCreditsPassed = 0;
+  let totalCreditsInProgress = 0;
+
+  let treeCreditsPassed = 0;
+  let treeCreditsInProgress = 0;
+  let treeCreditsTotal = 0;
+
+  let foundationCreditsPassed = 0;
+  let foundationCreditsInProgress = 0;
+  let foundationCreditsTotal = 0;
+
+  let specializedCoursesPassedCount = 0;
+  let specializedCoursesInProgressCount = 0;
+  let specializedCreditsPassed = 0;
+  let specializedCreditsInProgress = 0;
+
+  let generalElectiveCreditsPassed = 0;
+  let generalElectiveCreditsInProgress = 0;
+
+  let generalCoreCreditsPassed = 0;
+  let generalCoreCreditsInProgress = 0;
+
+  let totalGradePoints = 0;
+  let totalGradedCredits = 0;
+
+  COURSES.forEach((course) => {
+    const status = statuses[course.id];
+    const isPassed = status === 'PASSED';
+    const isInProgress = status === 'IN_PROGRESS';
+    const grade = grades[course.id];
+
+    if (isPassed && typeof grade === 'number' && grade >= 10) {
+      totalGradePoints += grade * course.credits;
+      totalGradedCredits += course.credits;
+    }
+
+    if (course.type === 'tree') {
+      treeCreditsTotal += course.credits;
+      if (isPassed) {
+        treeCreditsPassed += course.credits;
+        totalCreditsPassed += course.credits;
+      } else if (isInProgress) {
+        treeCreditsInProgress += course.credits;
+        totalCreditsInProgress += course.credits;
+      }
+    } else if (course.type === 'foundation') {
+      foundationCreditsTotal += course.credits;
+      if (isPassed) {
+        foundationCreditsPassed += course.credits;
+        totalCreditsPassed += course.credits;
+      } else if (isInProgress) {
+        foundationCreditsInProgress += course.credits;
+        totalCreditsInProgress += course.credits;
+      }
+    } else if (course.type === 'general_core') {
+      if (isPassed) {
+        generalCoreCreditsPassed += course.credits;
+        totalCreditsPassed += course.credits;
+      } else if (isInProgress) {
+        generalCoreCreditsInProgress += course.credits;
+        totalCreditsInProgress += course.credits;
+      }
+    } else if (course.type === 'specialized') {
+      if (isPassed) {
+        specializedCoursesPassedCount += 1;
+        specializedCreditsPassed += course.credits;
+        totalCreditsPassed += course.credits;
+      } else if (isInProgress) {
+        specializedCoursesInProgressCount += 1;
+        specializedCreditsInProgress += course.credits;
+        totalCreditsInProgress += course.credits;
+      }
+    } else if (course.type === 'general_elective') {
+      if (isPassed) {
+        generalElectiveCreditsPassed += course.credits;
+        totalCreditsPassed += course.credits;
+      } else if (isInProgress) {
+        generalElectiveCreditsInProgress += course.credits;
+        totalCreditsInProgress += course.credits;
+      }
+    }
+  });
+
+  const treeProgressPercent =
+    treeCreditsTotal > 0 ? Math.round((treeCreditsPassed / treeCreditsTotal) * 100) : 0;
+  const treeProjectedPercent =
+    treeCreditsTotal > 0
+      ? Math.round(((treeCreditsPassed + treeCreditsInProgress) / treeCreditsTotal) * 100)
+      : 0;
+
+  const specializedRequirementMet =
+    specializedCoursesPassedCount >= 7 && specializedCreditsPassed >= 21;
+
+  const generalElectiveRequirementMet = generalElectiveCreditsPassed >= 13;
+  const generalCoreRequirementMet = generalCoreCreditsPassed >= 20;
+
+  const overallGpa =
+    totalGradedCredits > 0 ? Math.round((totalGradePoints / totalGradedCredits) * 100) / 100 : undefined;
+
+  const isGraduationEligible =
+    totalCreditsPassed >= 140 &&
+    treeCreditsPassed >= treeCreditsTotal &&
+    foundationCreditsPassed >= foundationCreditsTotal &&
+    specializedRequirementMet &&
+    generalElectiveRequirementMet &&
+    generalCoreRequirementMet;
+
+  return {
+    totalCreditsPassed,
+    totalCreditsInProgress,
+    treeCreditsPassed,
+    treeCreditsInProgress,
+    treeCreditsTotal,
+    treeProgressPercent,
+    treeProjectedPercent,
+    foundationCreditsPassed,
+    foundationCreditsInProgress,
+    foundationCreditsTotal,
+    specializedCoursesPassedCount,
+    specializedCoursesInProgressCount,
+    specializedCreditsPassed,
+    specializedCreditsInProgress,
+    specializedRequirementMet,
+    generalElectiveCreditsPassed,
+    generalElectiveCreditsInProgress,
+    generalElectiveRequirementMet,
+    generalCoreCreditsPassed,
+    generalCoreCreditsInProgress,
+    generalCoreRequirementMet,
+    overallGpa,
+    isGraduationEligible,
+  };
+}
+
+/**
+ * Calculate Progress across all 17 Knowledge Clusters
+ */
+export function calculateClusterProgresses(
+  statuses: Record<string, CourseStatus>
+): ClusterProgress[] {
+  return KNOWLEDGE_CLUSTERS.map((cluster) => {
+    const totalCoursesCount = cluster.courseIds.length;
+    let passedCoursesCount = 0;
+    let inProgressCoursesCount = 0;
+    const passedCourseIds: string[] = [];
+    const missingCourseIds: string[] = [];
+
+    cluster.courseIds.forEach((cId) => {
+      const status = statuses[cId];
+      if (status === 'PASSED') {
+        passedCoursesCount += 1;
+        passedCourseIds.push(cId);
+      } else if (status === 'IN_PROGRESS') {
+        inProgressCoursesCount += 1;
+        missingCourseIds.push(cId);
+      } else {
+        missingCourseIds.push(cId);
+      }
+    });
+
+    const percentage =
+      totalCoursesCount > 0 ? Math.round((passedCoursesCount / totalCoursesCount) * 100) : 0;
+    const projectedPercentage =
+      totalCoursesCount > 0
+        ? Math.round(((passedCoursesCount + inProgressCoursesCount) / totalCoursesCount) * 100)
+        : 0;
+
+    return {
+      cluster,
+      totalCoursesCount,
+      passedCoursesCount,
+      inProgressCoursesCount,
+      passedCourseIds,
+      missingCourseIds,
+      percentage,
+      projectedPercentage,
+    };
+  });
+}
+
+/**
+ * Get Recommended Next Courses for a student based on their active target specialization tracks or highest-progress track
+ */
+export function getRecommendedCourses(
+  statuses: Record<string, CourseStatus>,
+  targetClusterIds?: string[] | string
+): { course: Course; reasonFa: string; reasonEn: string; clusterTitleFa: string }[] {
+  const clusterProgresses = calculateClusterProgresses(statuses);
+
+  // Normalize targetClusterIds to string array
+  const targetIds: string[] = Array.isArray(targetClusterIds)
+    ? targetClusterIds
+    : targetClusterIds
+    ? [targetClusterIds]
+    : [];
+
+  let focusClusters = clusterProgresses.filter((cp) => targetIds.includes(cp.cluster.id));
+  if (focusClusters.length === 0) {
+    // Pick top incomplete clusters
+    const sorted = [...clusterProgresses]
+      .filter((cp) => cp.percentage < 100)
+      .sort((a, b) => b.percentage - a.percentage);
+    focusClusters = sorted.slice(0, 2);
+  }
+
+  if (focusClusters.length === 0 && clusterProgresses.length > 0) {
+    focusClusters = [clusterProgresses[0]];
+  }
+
+  const recommendations: { course: Course; reasonFa: string; reasonEn: string; clusterTitleFa: string }[] = [];
+
+  focusClusters.forEach((focusCluster) => {
+    // Look for unpassed courses in focus cluster whose prerequisites ARE met
+    focusCluster.missingCourseIds.forEach((courseId) => {
+      const course = getCourseById(courseId);
+      if (!course || statuses[course.id] === 'PASSED') return;
+      if (recommendations.some((r) => r.course.id === course.id)) return;
+
+      const warnings = validateCourseRules(course, statuses);
+      const prereqMissing = warnings.some((w) => w.type === 'prerequisite_missing');
+
+      if (!prereqMissing) {
+        recommendations.push({
+          course,
+          clusterTitleFa: focusCluster.cluster.titleFa,
+          reasonFa: `تکمیل‌کننده گرایش تخصصی «${focusCluster.cluster.titleFa}» (پیش‌نیازها آماده هستند).`,
+          reasonEn: `Completes the "${focusCluster.cluster.titleEn}" track (prerequisites fulfilled).`,
+        });
+      }
+    });
+  });
+
+  // Also check other unpassed tree core courses in early terms that are unlocked
+  COURSES.filter((c) => c.type === 'tree' && statuses[c.id] === 'NOT_TAKEN').forEach((c) => {
+    if (recommendations.some((r) => r.course.id === c.id)) return;
+    const warnings = validateCourseRules(c, statuses);
+    if (!warnings.some((w) => w.type === 'prerequisite_missing')) {
+      recommendations.push({
+        course: c,
+        clusterTitleFa: 'دروس عمومی و پایه',
+        reasonFa: `درس پایه ترم ${c.term || 'آزاد'} نمودار درختی که پیش‌نیازهایش را پاس کرده‌اید.`,
+        reasonEn: `Core tree course for term ${c.term || 'any'} with satisfied prerequisites.`,
+      });
+    }
+  });
+
+  return recommendations.slice(0, 6);
+}

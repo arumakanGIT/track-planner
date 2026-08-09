@@ -1,0 +1,6 @@
+{
+  "name": "CE Curriculum Tracker & Specialization Planner",
+  "description": "Academic progress tracker, prerequisite validator, flowchart, and knowledge cluster planner for Computer Engineering students based on BS-CE 1400 curriculum.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

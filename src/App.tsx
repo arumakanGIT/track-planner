@@ -1,0 +1,288 @@
+import React, { useEffect, useState } from 'react';
+import { AcademicRulesView } from './components/AcademicRulesView';
+import { ChecklistView } from './components/ChecklistView';
+import { ClusterTracker } from './components/ClusterTracker';
+import { CourseModal } from './components/CourseModal';
+import { FlowchartView } from './components/FlowchartView';
+import { AppTab, Header } from './components/Header';
+import { PrerequisiteWarnings } from './components/PrerequisiteWarnings';
+import { ProgressSummary } from './components/ProgressSummary';
+import { TranscriptView } from './components/TranscriptView';
+import { COURSES } from './data/curriculumData';
+import {
+  calculateGraduationStats,
+  getInitialProgress,
+  loadSavedProgress,
+  saveProgress,
+  validateCourseRules,
+} from './lib/curriculumEngine';
+import { Course, CourseStatus, StudentProgress } from './types';
+
+export default function App() {
+  const [progress, setProgress] = useState<StudentProgress>(() => loadSavedProgress());
+  const [lang, setLang] = useState<'fa' | 'en' | 'dual'>('fa');
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('ce_curriculum_darkmode_v1');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [activeTab, setActiveTab] = useState<AppTab>('flowchart');
+  const [selectedModalCourse, setSelectedModalCourse] = useState<Course | null>(null);
+  const [showWarningsModal, setShowWarningsModal] = useState<boolean>(false);
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState<boolean>(false);
+
+  // Auto-save progress changes
+  useEffect(() => {
+    saveProgress(progress);
+  }, [progress]);
+
+  // Dark mode HTML class sync
+  useEffect(() => {
+    localStorage.setItem('ce_curriculum_darkmode_v1', String(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // RTL/LTR sync based on language choice
+  useEffect(() => {
+    if (lang === 'en') {
+      document.documentElement.dir = 'ltr';
+    } else {
+      document.documentElement.dir = 'rtl';
+    }
+  }, [lang]);
+
+  // Calculate graduation statistics
+  const stats = calculateGraduationStats(progress.courseStatuses, progress.courseGrades);
+
+  // Calculate total warning count
+  let warningCount = 0;
+  COURSES.forEach((course) => {
+    const st = progress.courseStatuses[course.id] || 'NOT_TAKEN';
+    if (st === 'PASSED' || st === 'IN_PROGRESS') {
+      const warnings = validateCourseRules(course, progress.courseStatuses);
+      if (warnings.length > 0) warningCount += warnings.length;
+    }
+  });
+
+  const handleUpdateStatus = (courseId: string, status: CourseStatus) => {
+    setProgress((prev) => ({
+      ...prev,
+      courseStatuses: {
+        ...prev.courseStatuses,
+        [courseId]: status,
+      },
+    }));
+  };
+
+  const handleUpdateGrade = (courseId: string, grade: number | undefined) => {
+    setProgress((prev) => {
+      const newGrades = { ...(prev.courseGrades || {}) };
+      if (grade === undefined) {
+        delete newGrades[courseId];
+      } else {
+        newGrades[courseId] = grade;
+      }
+      return {
+        ...prev,
+        courseGrades: newGrades,
+      };
+    });
+  };
+
+  const handleUpdateTermOverride = (courseId: string, termNum: number) => {
+    setProgress((prev) => ({
+      ...prev,
+      courseTermOverrides: {
+        ...(prev.courseTermOverrides || {}),
+        [courseId]: termNum,
+      },
+    }));
+  };
+
+  const handleUpdateTargetCluster = (clusterId: string) => {
+    setProgress((prev) => ({
+      ...prev,
+      targetClusterId: clusterId,
+      targetClusterIds: [clusterId],
+    }));
+  };
+
+  const handleToggleTargetCluster = (clusterId: string) => {
+    setProgress((prev) => {
+      const current = prev.targetClusterIds || (prev.targetClusterId ? [prev.targetClusterId] : []);
+      const exists = current.includes(clusterId);
+      const updated = exists ? current.filter((id) => id !== clusterId) : [...current, clusterId];
+      return {
+        ...prev,
+        targetClusterId: updated[0] || '',
+        targetClusterIds: updated,
+      };
+    });
+  };
+
+  const handleConfirmReset = () => {
+    const initial = getInitialProgress();
+    setProgress(initial);
+    saveProgress(initial);
+    setShowResetConfirmModal(false);
+  };
+
+
+  return (
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors">
+      
+      {/* Top Header */}
+      <Header
+        progress={progress}
+        onUpdateProgress={setProgress}
+        lang={lang}
+        setLang={setLang}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onReset={() => setShowResetConfirmModal(true)}
+        warningCount={warningCount}
+        onOpenWarnings={() => setShowWarningsModal(true)}
+      />
+
+      {/* Graduation Stats & Requirement Indicators */}
+      <ProgressSummary
+        stats={stats}
+        progress={progress}
+        onUpdateTargetCluster={handleUpdateTargetCluster}
+        lang={lang}
+      />
+
+      {/* Main Tab Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === 'flowchart' && (
+          <FlowchartView
+            progress={progress}
+            onUpdateStatus={handleUpdateStatus}
+            onUpdateGrade={handleUpdateGrade}
+            onUpdateTermOverride={handleUpdateTermOverride}
+            onOpenCourseModal={setSelectedModalCourse}
+            lang={lang}
+          />
+        )}
+
+        {activeTab === 'checklist' && (
+          <ChecklistView
+            progress={progress}
+            onUpdateStatus={handleUpdateStatus}
+            onUpdateGrade={handleUpdateGrade}
+            onOpenCourseModal={setSelectedModalCourse}
+            lang={lang}
+          />
+        )}
+
+        {activeTab === 'transcript' && (
+          <TranscriptView
+            progress={progress}
+            onUpdateStatus={handleUpdateStatus}
+            onUpdateGrade={handleUpdateGrade}
+            lang={lang}
+          />
+        )}
+
+        {activeTab === 'clusters' && (
+          <ClusterTracker
+            progress={progress}
+            onUpdateStatus={handleUpdateStatus}
+            onToggleTargetCluster={handleToggleTargetCluster}
+            onOpenCourseModal={setSelectedModalCourse}
+            lang={lang}
+          />
+        )}
+
+        {activeTab === 'rules' && (
+          <AcademicRulesView lang={lang} />
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 mt-12 bg-white dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 space-y-1">
+          <p className="font-medium">
+            {lang === 'en'
+              ? 'Computer Engineering B.Sc. Curriculum Tracker & Specialization Planner'
+              : 'سامانه مدیریت و برنامه‌ریزی دروس و گرایش‌های کارشناسی مهندسی کامپیوتر'}
+          </p>
+          <p className="text-[11px] text-slate-400">
+            {lang === 'en'
+              ? 'Data extracted from official Program Curriculum PDF (bs-ce-1400_2) & Sharif CE Regulations'
+              : 'داده‌ها بر اساس مصوبه برنامه درسی دوره کارشناسی مهندسی کامپیوتر و آیین‌نامه‌های دانشگاه صنعت شریف'}
+          </p>
+        </div>
+      </footer>
+
+      {/* Modals */}
+      <CourseModal
+        course={selectedModalCourse}
+        onClose={() => setSelectedModalCourse(null)}
+        progress={progress}
+        onUpdateStatus={handleUpdateStatus}
+        onUpdateGrade={handleUpdateGrade}
+        lang={lang}
+      />
+
+      {showWarningsModal && (
+        <PrerequisiteWarnings
+          progress={progress}
+          onClose={() => setShowWarningsModal(false)}
+          onOpenCourseModal={setSelectedModalCourse}
+          lang={lang}
+        />
+      )}
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center text-xl font-bold">
+              ⚠️
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              {lang === 'en' ? 'Reset All Progress?' : 'بازنشانی کامل اطلاعات پیشرفت درسی'}
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              {lang === 'en'
+                ? 'Are you sure you want to reset all courses, grades, and custom semester overrides? This action cannot be undone.'
+                : 'آیا از بازنشانی کامل اطلاعات پیشرفت درسی مطمئن هستید؟ با این کار تمام وضعیت‌های گذرانده شده و نمرات ثبت‌شده به حالت اولیه بازمی‌گردند.'}
+            </p>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={() => setShowResetConfirmModal(false)}
+                className="flex-1 px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
+              >
+                {lang === 'en' ? 'Cancel' : 'انصراف'}
+              </button>
+              <button
+                onClick={handleConfirmReset}
+                className="flex-1 px-4 py-2 text-xs font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20 transition"
+              >
+                {lang === 'en' ? 'Yes, Reset' : 'بله، بازنشانی شود'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Persistent Prerequisite Warning Floating Button */}
+      {warningCount > 0 && !showWarningsModal && (
+        <button
+          onClick={() => setShowWarningsModal(true)}
+          className="fixed bottom-6 left-6 z-40 bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs transition animate-bounce border border-amber-300"
+        >
+          <span>⚠️</span>
+          <span>{lang === 'en' ? `${warningCount} Prerequisite Alert(s)` : `${warningCount} هشدار پیش‌نیاز`}</span>
+        </button>
+      )}
+
+    </div>
+  );
+}

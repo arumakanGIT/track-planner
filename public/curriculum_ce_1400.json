@@ -1,0 +1,436 @@
+{
+  "program": "Computer Engineering B.Sc.",
+  "curriculumCode": "BS-CE-1400_2",
+  "entryYear": "1400+",
+  "degreeRequirement": {
+    "totalCredits": 140,
+    "specializedElectiveMinCourses": 7,
+    "specializedElectiveMinCredits": 21,
+    "generalElectiveMinCredits": 13
+  },
+  "rulesSummaryFa": [
+    "دروس نمودار درختی (اجباری): طبق چیدمان ترم‌های ۱ تا ۸ اخذ شوند و پیش‌نیاز/همنیازهای آن‌ها رعایت شود.",
+    "دروس تخصصی (جدول ۱): دانشجو ملزم به گذراندن حداقل ۷ درس (حداقل ۲۱ واحد) است.",
+    "دروس اختیاری (جدول ۲): دانشجو ملزم به گذراندن حداقل ۱۳ واحد است.",
+    "تطبیق‌ها: درس «طراحی شیء‌گرای سیستم‌ها» با «ایجاد چابک نرم‌افزار» و «برنامه‌سازی وب» با «برنامه‌سازی موبایل» قابل تطبیق است."
+  ],
+  "courses": [
+    {
+      "id": "30003",
+      "titleFa": "تربیت بدنی",
+      "titleEn": "Physical Education",
+      "credits": 1,
+      "type": "general_core",
+      "term": 1,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "22015",
+      "titleFa": "ریاضی عمومی 1",
+      "titleEn": "General Mathematics I",
+      "credits": 3,
+      "type": "tree",
+      "term": 1,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "24011",
+      "titleFa": "فیزیک 1",
+      "titleEn": "General Physics I",
+      "credits": 3,
+      "type": "tree",
+      "term": 1,
+      "prerequisites": [],
+      "corequisites": ["22015"]
+    },
+    {
+      "id": "33018",
+      "titleFa": "کارگاه عمومی",
+      "titleEn": "General Workshop",
+      "credits": 1,
+      "type": "tree",
+      "term": 1,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "40153",
+      "titleFa": "مبانی برنامه‌سازی",
+      "titleEn": "Fundamentals of Programming",
+      "credits": 3,
+      "type": "tree",
+      "term": 1,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "40108",
+      "titleFa": "کارگاه کامپیوتر",
+      "titleEn": "Computer Workshop",
+      "credits": 1,
+      "type": "tree",
+      "term": 1,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "31123",
+      "titleFa": "زبان خارجی عمومی",
+      "titleEn": "General English",
+      "credits": 3,
+      "type": "general_core",
+      "term": 1,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "30004",
+      "titleFa": "ورزش 1",
+      "titleEn": "Sports I",
+      "credits": 1,
+      "type": "general_core",
+      "term": 2,
+      "prerequisites": ["30003"],
+      "corequisites": []
+    },
+    {
+      "id": "22016",
+      "titleFa": "ریاضی عمومی 2",
+      "titleEn": "General Mathematics II",
+      "credits": 3,
+      "type": "tree",
+      "term": 2,
+      "prerequisites": ["22015"],
+      "corequisites": []
+    },
+    {
+      "id": "24012",
+      "titleFa": "فیزیک 2",
+      "titleEn": "General Physics II",
+      "credits": 3,
+      "type": "tree",
+      "term": 2,
+      "prerequisites": ["24011"],
+      "corequisites": ["22016"]
+    },
+    {
+      "id": "24002",
+      "titleFa": "آز فیزیک 2",
+      "titleEn": "Physics II Lab",
+      "credits": 1,
+      "type": "tree",
+      "term": 2,
+      "prerequisites": [],
+      "corequisites": ["24012"]
+    },
+    {
+      "id": "40212",
+      "titleFa": "مدارهای منطقی",
+      "titleEn": "Logic Circuits",
+      "credits": 3,
+      "type": "tree",
+      "term": 2,
+      "prerequisites": ["40153"],
+      "corequisites": []
+    },
+    {
+      "id": "40244",
+      "titleFa": "برنامه‌سازی پیشرفته",
+      "titleEn": "Advanced Programming",
+      "credits": 3,
+      "type": "tree",
+      "term": 2,
+      "prerequisites": ["40153"],
+      "corequisites": []
+    },
+    {
+      "id": "40115",
+      "titleFa": "ساختمان‌های گسسته",
+      "titleEn": "Discrete Structures",
+      "credits": 3,
+      "type": "tree",
+      "term": 2,
+      "prerequisites": ["40153"],
+      "corequisites": []
+    },
+    {
+      "id": "22034",
+      "titleFa": "معادلات دیفرانسیل",
+      "titleEn": "Differential Equations",
+      "credits": 3,
+      "type": "tree",
+      "term": 3,
+      "prerequisites": ["22016"],
+      "corequisites": []
+    },
+    {
+      "id": "40124",
+      "titleFa": "مبانی مدارهای الکتریکی و الکترونیکی",
+      "titleEn": "Fundamentals of Electrical & Electronic Circuits",
+      "credits": 3,
+      "type": "tree",
+      "term": 3,
+      "prerequisites": ["24012"],
+      "corequisites": []
+    },
+    {
+      "id": "40126",
+      "titleFa": "ساختار و زبان کامپیوتر",
+      "titleEn": "Computer Structure & Assembly Language",
+      "credits": 3,
+      "type": "tree",
+      "term": 3,
+      "prerequisites": ["40212"],
+      "corequisites": []
+    },
+    {
+      "id": "40206",
+      "titleFa": "آز مدارهای منطقی",
+      "titleEn": "Logic Circuits Lab",
+      "credits": 1,
+      "type": "tree",
+      "term": 3,
+      "prerequisites": ["40212"],
+      "corequisites": []
+    },
+    {
+      "id": "40254",
+      "titleFa": "ساختمان داده‌ها و الگوریتم‌ها",
+      "titleEn": "Data Structures & Algorithms",
+      "credits": 3,
+      "type": "tree",
+      "term": 3,
+      "prerequisites": ["40244", "40115"],
+      "corequisites": []
+    },
+    {
+      "id": "40211",
+      "titleFa": "زبان تخصصی",
+      "titleEn": "Technical English",
+      "credits": 1,
+      "type": "tree",
+      "term": 3,
+      "prerequisites": ["31123"],
+      "corequisites": []
+    },
+    {
+      "id": "40181",
+      "titleFa": "آمار و احتمال مهندسی",
+      "titleEn": "Engineering Statistics & Probability",
+      "credits": 3,
+      "type": "tree",
+      "term": 4,
+      "prerequisites": ["22015"],
+      "corequisites": []
+    },
+    {
+      "id": "40323",
+      "titleFa": "معماری کامپیوتر",
+      "titleEn": "Computer Architecture",
+      "credits": 3,
+      "type": "tree",
+      "term": 4,
+      "prerequisites": ["40126"],
+      "corequisites": []
+    },
+    {
+      "id": "40223",
+      "titleFa": "طراحی سیستم‌های دیجیتال",
+      "titleEn": "Digital Systems Design",
+      "credits": 3,
+      "type": "tree",
+      "term": 4,
+      "prerequisites": ["40212"],
+      "corequisites": ["40206"]
+    },
+    {
+      "id": "40203",
+      "titleFa": "آز طراحی سیستم‌های دیجیتال",
+      "titleEn": "Digital Systems Design Lab",
+      "credits": 1,
+      "type": "tree",
+      "term": 4,
+      "prerequisites": [],
+      "corequisites": ["40223"]
+    },
+    {
+      "id": "40415",
+      "titleFa": "نظریه زبان‌ها و ماشین‌ها",
+      "titleEn": "Formal Languages & Automata Theory",
+      "credits": 3,
+      "type": "tree",
+      "term": 4,
+      "prerequisites": ["40115"],
+      "corequisites": []
+    },
+    {
+      "id": "40221",
+      "titleFa": "ارائه مطالب علمی و فنی",
+      "titleEn": "Technical & Scientific Presentation",
+      "credits": 1,
+      "type": "tree",
+      "term": 4,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "40282",
+      "titleFa": "جبر خطی",
+      "titleEn": "Linear Algebra",
+      "credits": 3,
+      "type": "tree",
+      "term": 5,
+      "prerequisites": ["22016"],
+      "corequisites": []
+    },
+    {
+      "id": "40424",
+      "titleFa": "سیستم‌های عامل",
+      "titleEn": "Operating Systems",
+      "credits": 3,
+      "type": "tree",
+      "term": 5,
+      "prerequisites": ["40323"],
+      "corequisites": []
+    },
+    {
+      "id": "40103",
+      "titleFa": "آز معماری کامپیوتر",
+      "titleEn": "Computer Architecture Lab",
+      "credits": 1,
+      "type": "tree",
+      "term": 5,
+      "prerequisites": [],
+      "corequisites": ["40323"]
+    },
+    {
+      "id": "37514",
+      "titleFa": "دانش خانواده و جمعیت",
+      "titleEn": "Family Knowledge & Population",
+      "credits": 2,
+      "type": "general_core",
+      "term": 5,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "40417",
+      "titleFa": "هوش مصنوعی",
+      "titleEn": "Artificial Intelligence",
+      "credits": 3,
+      "type": "tree",
+      "term": 5,
+      "prerequisites": ["40254"],
+      "corequisites": ["40181"]
+    },
+    {
+      "id": "40384",
+      "titleFa": "طراحی پایگاه داده‌ها",
+      "titleEn": "Database Design",
+      "credits": 3,
+      "type": "tree",
+      "term": 5,
+      "prerequisites": ["40254"],
+      "corequisites": []
+    },
+    {
+      "id": "31119",
+      "titleFa": "فارسی عمومی",
+      "titleEn": "Persian Literature",
+      "credits": 3,
+      "type": "general_core",
+      "term": 6,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "40443",
+      "titleFa": "شبکه‌های کامپیوتر",
+      "titleEn": "Computer Networks",
+      "credits": 3,
+      "type": "tree",
+      "term": 6,
+      "prerequisites": ["40424"],
+      "corequisites": []
+    },
+    {
+      "id": "40416",
+      "titleFa": "آز شبکه‌های کامپیوتر",
+      "titleEn": "Computer Networks Lab",
+      "credits": 1,
+      "type": "tree",
+      "term": 6,
+      "prerequisites": [],
+      "corequisites": ["40443"]
+    },
+    {
+      "id": "40408",
+      "titleFa": "آز سیستم‌های عامل",
+      "titleEn": "Operating Systems Lab",
+      "credits": 1,
+      "type": "tree",
+      "term": 6,
+      "prerequisites": [],
+      "corequisites": ["40424"]
+    },
+    {
+      "id": "40418",
+      "titleFa": "تحلیل و طراحی سیستم‌ها",
+      "titleEn": "Systems Analysis & Design",
+      "credits": 3,
+      "type": "tree",
+      "term": 6,
+      "prerequisites": ["40221"],
+      "corequisites": ["40384"]
+    },
+    {
+      "id": "40441",
+      "titleFa": "امنیت داده و شبکه",
+      "titleEn": "Data & Network Security",
+      "credits": 3,
+      "type": "tree",
+      "term": 7,
+      "prerequisites": ["40443"],
+      "corequisites": []
+    },
+    {
+      "id": "40450",
+      "titleFa": "کارآموزی مهندسی کامپیوتر",
+      "titleEn": "Computer Engineering Internship",
+      "credits": 1,
+      "type": "tree",
+      "term": 7,
+      "prerequisites": [],
+      "corequisites": []
+    },
+    {
+      "id": "40760",
+      "titleFa": "پروژه مهندسی کامپیوتر",
+      "titleEn": "B.Sc. Project",
+      "credits": 3,
+      "type": "tree",
+      "term": 7,
+      "prerequisites": ["40418"],
+      "corequisites": []
+    }
+  ],
+  "specializedElectivesTable1": [
+    { "id": "40215", "titleFa": "محاسبات عددی", "credits": 3, "prerequisites": ["22034"] },
+    { "id": "40242", "titleFa": "سیگنال‌ها و سیستم‌ها", "credits": 3, "prerequisites": ["40124"] },
+    { "id": "40324", "titleFa": "بازیابی پیشرفته اطلاعات", "credits": 3, "prerequisites": ["40254"] },
+    { "id": "40353", "titleFa": "طراحی VLSI", "credits": 3, "prerequisites": ["40223", "40124"] },
+    { "id": "40354", "titleFa": "طراحی الگوریتم‌ها", "credits": 3, "prerequisites": ["40254"] },
+    { "id": "40415C", "titleFa": "طراحی کامپایلرها", "credits": 3, "prerequisites": ["40254"] },
+    { "id": "40419", "titleFa": "برنامه‌سازی وب", "credits": 3, "prerequisites": ["40244"] },
+    { "id": "40432", "titleFa": "رایانش چندرسانه‌ای", "credits": 3, "prerequisites": ["40244", "40323"] },
+    { "id": "40453", "titleFa": "سیستم‌های بی‌درنگ", "credits": 3, "corequisites": ["40424"] },
+    { "id": "40462", "titleFa": "سیستم‌های نهفته", "credits": 3, "prerequisites": ["40323"] },
+    { "id": "40474", "titleFa": "مهندسی نرم‌افزار", "credits": 3, "prerequisites": ["40418"] },
+    { "id": "40484", "titleFa": "طراحی شیء‌گرای سیستم‌ها", "credits": 3, "prerequisites": ["40418"] },
+    { "id": "40634", "titleFa": "شبیه‌سازی کامپیوتر", "credits": 3, "prerequisites": ["40181"] },
+    { "id": "40717", "titleFa": "یادگیری ماشین", "credits": 3, "prerequisites": ["40181", "40282"] }
+  ],
+  "knowledgeClustersCount": 17
+}
