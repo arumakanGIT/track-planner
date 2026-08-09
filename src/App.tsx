@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { Github, Mail, Send } from 'lucide-react';
+import { AboutView } from './components/AboutView';
 import { AcademicRulesView } from './components/AcademicRulesView';
 import { ChecklistView } from './components/ChecklistView';
 import { ClusterTracker } from './components/ClusterTracker';
@@ -68,13 +70,32 @@ export default function App() {
   });
 
   const handleUpdateStatus = (courseId: string, status: CourseStatus) => {
-    setProgress((prev) => ({
-      ...prev,
-      courseStatuses: {
+    setProgress((prev) => {
+      const newStatuses = {
         ...prev.courseStatuses,
         [courseId]: status,
-      },
-    }));
+      };
+
+      // Auto-assign course to a term in flowchart if status changes to taken/in-progress and has no term set
+      let newOverrides = prev.courseTermOverrides;
+      const course = COURSES.find((c) => c.id === courseId);
+      if (course && (status === 'PASSED' || status === 'IN_PROGRESS' || status === 'FAILED')) {
+        const currentOverride = prev.courseTermOverrides?.[courseId];
+        if (currentOverride === undefined) {
+          const autoTerm = course.term || (course.type === 'specialized' ? 5 : course.type === 'foundation' ? 2 : 7);
+          newOverrides = {
+            ...(prev.courseTermOverrides || {}),
+            [courseId]: autoTerm,
+          };
+        }
+      }
+
+      return {
+        ...prev,
+        courseStatuses: newStatuses,
+        ...(newOverrides !== prev.courseTermOverrides ? { courseTermOverrides: newOverrides } : {}),
+      };
+    });
   };
 
   const handleUpdateGrade = (courseId: string, grade: number | undefined) => {
@@ -202,11 +223,15 @@ export default function App() {
         {activeTab === 'rules' && (
           <AcademicRulesView lang={lang} />
         )}
+
+        {activeTab === 'about' && (
+          <AboutView lang={lang} />
+        )}
       </main>
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400 mt-12 bg-white dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 space-y-1">
+        <div className="max-w-7xl mx-auto px-4 space-y-2">
           <p className="font-medium">
             {lang === 'en'
               ? 'Computer Engineering B.Sc. Curriculum Tracker & Specialization Planner'
@@ -217,6 +242,33 @@ export default function App() {
               ? 'Data extracted from official Program Curriculum PDF (bs-ce-1400_2) & Sharif CE Regulations'
               : 'داده‌ها بر اساس مصوبه برنامه درسی دوره کارشناسی مهندسی کامپیوتر و آیین‌نامه‌های دانشگاه صنعت شریف'}
           </p>
+          <div className="pt-2 flex items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
+            <a
+              href="https://t.me/arumakan0"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Telegram: @arumakan0"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+            >
+              <Send className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="mailto:ar1umak1an@gmail.com"
+              title="Email: ar1umak1an@gmail.com"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 dark:hover:text-rose-400 transition"
+            >
+              <Mail className="w-3.5 h-3.5" />
+            </a>
+            <a
+              href="https://github.com/arumakanGIT"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="GitHub: arumakanGIT"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition"
+            >
+              <Github className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       </footer>
 

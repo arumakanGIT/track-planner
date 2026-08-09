@@ -59,20 +59,33 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
   const [panelSearchQuery, setPanelSearchQuery] = useState('');
   const [panelTypeFilter, setPanelTypeFilter] = useState<string>('all');
   const [customTermCount, setCustomTermCount] = useState<number>(() => {
-    const overrideTerms = Object.values(progress.courseTermOverrides || {}) as number[];
+    const overrideTerms = (Object.values(progress.courseTermOverrides || {}).filter((t) => typeof t === 'number' && t > 0)) as number[];
     return Math.max(8, ...overrideTerms, 1);
   });
 
   const activeFocusId = hoveredCourseId || selectedCourseId;
   const activeFocusCourse = activeFocusId ? getCourseById(activeFocusId) : null;
 
+  // Helper to determine the assigned term for a course
+  const getAssignedTerm = (course: Course): number | null => {
+    const override = progress.courseTermOverrides?.[course.id];
+    // Explicitly removed from flowchart
+    if (override === 0) return null;
+    if (override && override > 0) return override;
+    // Default curriculum term
+    if (course.term) return course.term;
+    // If student has taken or is currently taking it
+    const st = progress.courseStatuses[course.id];
+    if (st && st !== 'NOT_TAKEN') {
+      return course.type === 'specialized' ? 5 : course.type === 'foundation' ? 2 : 7;
+    }
+    return null;
+  };
+
   // Derive term lists (1..customTermCount)
   const termsMap: Record<number, Course[]> = {};
   for (let t = 1; t <= customTermCount; t++) {
-    termsMap[t] = COURSES.filter((c) => {
-      const assignedTerm = progress.courseTermOverrides?.[c.id] || c.term;
-      return assignedTerm === t;
-    });
+    termsMap[t] = COURSES.filter((c) => getAssignedTerm(c) === t);
   }
 
   // Calculate term credit sums
@@ -367,11 +380,23 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                               !matchesCluster || !matchesSearch ? 'opacity-30 hover:opacity-100' : 'opacity-100'
                             } ${isBeingDragged ? 'opacity-40 scale-95 border-dashed border-indigo-500' : ''}`}
                           >
-                            {/* Top Line: Code & Credits */}
+                            {/* Top Line: Code & Credits & Quick Remove */}
                             <div className="flex items-center justify-between text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 mb-1">
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold">
-                                {course.id}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold">
+                                  {course.id}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdateTermOverride(course.id, 0);
+                                  }}
+                                  className="p-0.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition"
+                                  title={lang === 'en' ? 'Remove course from chart' : 'حذف درس از چارت'}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
                               <span className="font-semibold">{course.credits} {lang === 'en' ? 'cr' : 'واحد'}</span>
                             </div>
 
@@ -415,24 +440,6 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                                     : (lang === 'en' ? 'Not Taken' : 'اخذ نشده')}
                                 </span>
                               </button>
-
-                              {/* Term Reassign Dropdown */}
-                              <select
-                                value={progress.courseTermOverrides?.[course.id] || course.term || termNum}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  onUpdateTermOverride(course.id, Number(e.target.value));
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                                className="bg-transparent text-[10px] text-slate-500 dark:text-slate-400 font-mono border-0 cursor-pointer focus:outline-none"
-                                title={lang === 'en' ? 'Move course to term' : 'انتقال درس به ترم دیگر'}
-                              >
-                                {Array.from({ length: customTermCount }, (_, index) => index + 1).map((t) => (
-                                  <option key={t} value={t} className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
-                                    {lang === 'en' ? `Term ${t}` : `ترم ${t}`}
-                                  </option>
-                                ))}
-                              </select>
 
                             </div>
 
@@ -569,11 +576,11 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                             {/* Remove from Term */}
                             <button
                               onClick={() => {
-                                // Default term reset
-                                onUpdateTermOverride(course.id, course.term || 1);
+                                // Remove from flowchart completely
+                                onUpdateTermOverride(course.id, 0);
                               }}
                               className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
-                              title={lang === 'en' ? 'Remove from term' : 'حذف از این ترم'}
+                              title={lang === 'en' ? 'Remove course from chart' : 'حذف درس از چارت'}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -612,6 +619,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                     className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-200"
                   >
                     <option value="all">{lang === 'en' ? 'All Course Types' : 'همه انواع دروس'}</option>
+                    <option value="unassigned">{lang === 'en' ? 'Unassigned / Removed' : 'دروس حذف‌شده / غیرفعال'}</option>
                     <option value="tree">{lang === 'en' ? 'Tree Core Courses' : 'دروس درختی (اصلی)'}</option>
                     <option value="specialized">{lang === 'en' ? 'Specialized Courses' : 'دروس تخصصی'}</option>
                     <option value="foundation">{lang === 'en' ? 'Foundation Courses' : 'دروس پایه'}</option>
@@ -623,19 +631,24 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                 {/* Search Results List */}
                 <div className="space-y-2 max-h-60 overflow-y-auto pt-1 pr-1">
                   {COURSES.filter((c) => {
-                    const currentAssignedTerm = progress.courseTermOverrides?.[c.id] || c.term;
+                    const currentAssignedTerm = getAssignedTerm(c);
                     const matchesSearch =
                       !panelSearchQuery ||
                       c.titleFa.includes(panelSearchQuery) ||
                       c.titleEn.toLowerCase().includes(panelSearchQuery.toLowerCase()) ||
                       c.id.includes(panelSearchQuery);
-                    const matchesType = panelTypeFilter === 'all' || c.type === panelTypeFilter;
+                    const matchesType =
+                      panelTypeFilter === 'all' ||
+                      (panelTypeFilter === 'unassigned'
+                        ? currentAssignedTerm === null
+                        : c.type === panelTypeFilter);
                     const notInCurrentTerm = currentAssignedTerm !== activeManageTerm;
 
                     return matchesSearch && matchesType && notInCurrentTerm;
                   })
                     .slice(0, 15)
                     .map((course) => {
+                      const currentAssignedTerm = getAssignedTerm(course);
                       const warnings = validateCourseRules(course, progress.courseStatuses);
                       const hasPrereqMissing = warnings.some((w) => w.type === 'prerequisite_missing');
 
@@ -652,6 +665,11 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                               <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
                                 {lang === 'en' ? course.titleEn : course.titleFa}
                               </span>
+                              {currentAssignedTerm === null && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 font-bold">
+                                  {lang === 'en' ? 'Unassigned' : 'حذف شده'}
+                                </span>
+                              )}
                             </div>
                             <div className="text-[10px] text-slate-500 font-mono">
                               {course.credits} {lang === 'en' ? 'Credits' : 'واحد'} • {course.type === 'tree' ? (lang === 'en' ? 'Tree Core' : 'اصلی چارت') : (lang === 'en' ? 'Elective / General' : 'اختیاری / عمومی')}

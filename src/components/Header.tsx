@@ -5,7 +5,9 @@ import {
   CheckCircle2,
   Download,
   FileJson,
+  Github,
   GraduationCap,
+  Info,
   Moon,
   RefreshCw,
   RotateCcw,
@@ -16,7 +18,7 @@ import {
 } from 'lucide-react';
 import { StudentProgress } from '../types';
 
-export type AppTab = 'flowchart' | 'checklist' | 'transcript' | 'clusters' | 'rules';
+export type AppTab = 'flowchart' | 'checklist' | 'transcript' | 'clusters' | 'rules' | 'about';
 
 interface HeaderProps {
   progress: StudentProgress;
@@ -228,6 +230,17 @@ export const Header: React.FC<HeaderProps> = ({
               {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
             </button>
 
+            {/* GitHub Profile */}
+            <a
+              href="https://github.com/arumakanGIT"
+              target="_blank"
+              rel="noopener noreferrer"
+              title={lang === 'en' ? 'GitHub Profile' : 'پروفایل گیتهاب'}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition"
+            >
+              <Github className="w-4 h-4" />
+            </a>
+
             {/* Reset */}
             <button
               onClick={onReset}
@@ -300,6 +313,18 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Scale className="w-4 h-4" />
             <span>{lang === 'en' ? 'Academic Rules & Notes' : 'قوانین و نکات آموزشی'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+              activeTab === 'about'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+          >
+            <Info className="w-4 h-4" />
+            <span>{lang === 'en' ? 'About Project' : 'درباره پروژه'}</span>
           </button>
 
         </div>
