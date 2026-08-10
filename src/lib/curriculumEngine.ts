@@ -67,6 +67,24 @@ export function saveProgress(progress: StudentProgress): void {
 }
 
 /**
+ * Helper to determine the assigned term for a course based on overrides or defaults
+ */
+export function getAssignedTerm(course: Course, progress: StudentProgress): number | null {
+  const override = progress.courseTermOverrides?.[course.id];
+  // Explicitly removed from flowchart/terms
+  if (override === 0) return null;
+  if (override && override > 0) return override;
+  // Default curriculum term
+  if (course.term) return course.term;
+  // If student has taken or is currently taking it
+  const st = progress.courseStatuses[course.id];
+  if (st && st !== 'NOT_TAKEN') {
+    return course.type === 'specialized' ? 5 : course.type === 'foundation' ? 2 : 7;
+  }
+  return null;
+}
+
+/**
  * Validate prerequisite and corequisite rules for a target course given current course statuses.
  */
 export function validateCourseRules(

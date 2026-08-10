@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { COURSES, KNOWLEDGE_CLUSTERS } from '../data/curriculumData';
 import { Course, CourseStatus, StudentProgress } from '../types';
-import { getCourseById, validateCourseRules } from '../lib/curriculumEngine';
+import { getAssignedTerm, getCourseById, validateCourseRules } from '../lib/curriculumEngine';
 import { exportElementAsPng } from '../lib/exportUtils';
 
 interface FlowchartViewProps {
@@ -58,34 +58,25 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
   const [activeManageTerm, setActiveManageTerm] = useState<number | null>(null);
   const [panelSearchQuery, setPanelSearchQuery] = useState('');
   const [panelTypeFilter, setPanelTypeFilter] = useState<string>('all');
-  const [customTermCount, setCustomTermCount] = useState<number>(() => {
-    const overrideTerms = (Object.values(progress.courseTermOverrides || {}).filter((t) => typeof t === 'number' && t > 0)) as number[];
-    return Math.max(8, ...overrideTerms, 1);
-  });
+  const overrideTerms = (Object.values(progress.courseTermOverrides || {}).filter(
+    (t) => typeof t === 'number' && t > 0
+  )) as number[];
+  const maxOverrideTerm = Math.max(8, ...overrideTerms, 1);
+
+  const [customTermCount, setCustomTermCount] = useState<number>(maxOverrideTerm);
+
+  // Keep customTermCount in sync if new max override term is added anywhere
+  React.useEffect(() => {
+    setCustomTermCount((prev) => Math.max(prev, maxOverrideTerm));
+  }, [maxOverrideTerm]);
 
   const activeFocusId = hoveredCourseId || selectedCourseId;
   const activeFocusCourse = activeFocusId ? getCourseById(activeFocusId) : null;
 
-  // Helper to determine the assigned term for a course
-  const getAssignedTerm = (course: Course): number | null => {
-    const override = progress.courseTermOverrides?.[course.id];
-    // Explicitly removed from flowchart
-    if (override === 0) return null;
-    if (override && override > 0) return override;
-    // Default curriculum term
-    if (course.term) return course.term;
-    // If student has taken or is currently taking it
-    const st = progress.courseStatuses[course.id];
-    if (st && st !== 'NOT_TAKEN') {
-      return course.type === 'specialized' ? 5 : course.type === 'foundation' ? 2 : 7;
-    }
-    return null;
-  };
-
   // Derive term lists (1..customTermCount)
   const termsMap: Record<number, Course[]> = {};
   for (let t = 1; t <= customTermCount; t++) {
-    termsMap[t] = COURSES.filter((c) => getAssignedTerm(c) === t);
+    termsMap[t] = COURSES.filter((c) => getAssignedTerm(c, progress) === t);
   }
 
   // Calculate term credit sums
@@ -631,7 +622,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                 {/* Search Results List */}
                 <div className="space-y-2 max-h-60 overflow-y-auto pt-1 pr-1">
                   {COURSES.filter((c) => {
-                    const currentAssignedTerm = getAssignedTerm(c);
+                    const currentAssignedTerm = getAssignedTerm(c, progress);
                     const matchesSearch =
                       !panelSearchQuery ||
                       c.titleFa.includes(panelSearchQuery) ||
@@ -648,7 +639,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                   })
                     .slice(0, 15)
                     .map((course) => {
-                      const currentAssignedTerm = getAssignedTerm(course);
+                      const currentAssignedTerm = getAssignedTerm(course, progress);
                       const warnings = validateCourseRules(course, progress.courseStatuses);
                       const hasPrereqMissing = warnings.some((w) => w.type === 'prerequisite_missing');
 

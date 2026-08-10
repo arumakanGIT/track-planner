@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { KNOWLEDGE_CLUSTERS } from '../data/curriculumData';
 import { Course, CourseStatus, StudentProgress } from '../types';
-import { getCourseById, validateCourseRules } from '../lib/curriculumEngine';
+import { getAssignedTerm, getCourseById, validateCourseRules } from '../lib/curriculumEngine';
 
 interface CourseModalProps {
   course: Course | null;
@@ -19,6 +19,7 @@ interface CourseModalProps {
   progress: StudentProgress;
   onUpdateStatus: (courseId: string, status: CourseStatus) => void;
   onUpdateGrade: (courseId: string, grade: number | undefined) => void;
+  onUpdateTermOverride?: (courseId: string, termNum: number) => void;
   lang: 'fa' | 'en' | 'dual';
 }
 
@@ -28,6 +29,7 @@ export const CourseModal: React.FC<CourseModalProps> = ({
   progress,
   onUpdateStatus,
   onUpdateGrade,
+  onUpdateTermOverride,
   lang,
 }) => {
   if (!course) return null;
@@ -75,63 +77,85 @@ export const CourseModal: React.FC<CourseModalProps> = ({
         <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
           
           {/* Status & Grade Quick Edit */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div>
-              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {lang === 'en' ? 'Course Progress Status:' : 'وضعیت گذراندن درس:'}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 space-y-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {lang === 'en' ? 'Course Progress Status:' : 'وضعیت گذراندن درس:'}
+                </div>
+                <div className="flex items-center gap-1 mt-1.5">
+                  <button
+                    onClick={() => onUpdateStatus(course.id, 'NOT_TAKEN')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
+                      currentStatus === 'NOT_TAKEN'
+                        ? 'bg-slate-700 text-white'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {lang === 'en' ? 'Not Taken' : 'اخذ نشده'}
+                  </button>
+                  <button
+                    onClick={() => onUpdateStatus(course.id, 'IN_PROGRESS')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
+                      currentStatus === 'IN_PROGRESS'
+                        ? 'bg-amber-500 text-white font-bold'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {lang === 'en' ? 'In Progress' : 'در حال اخذ'}
+                  </button>
+                  <button
+                    onClick={() => onUpdateStatus(course.id, 'PASSED')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
+                      currentStatus === 'PASSED'
+                        ? 'bg-emerald-600 text-white font-bold'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {lang === 'en' ? 'Passed' : 'پاس شد'}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-1 mt-1.5">
-                <button
-                  onClick={() => onUpdateStatus(course.id, 'NOT_TAKEN')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
-                    currentStatus === 'NOT_TAKEN'
-                      ? 'bg-slate-700 text-white'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  {lang === 'en' ? 'Not Taken' : 'اخذ نشده'}
-                </button>
-                <button
-                  onClick={() => onUpdateStatus(course.id, 'IN_PROGRESS')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
-                    currentStatus === 'IN_PROGRESS'
-                      ? 'bg-amber-500 text-white font-bold'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  {lang === 'en' ? 'In Progress' : 'در حال اخذ'}
-                </button>
-                <button
-                  onClick={() => onUpdateStatus(course.id, 'PASSED')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
-                    currentStatus === 'PASSED'
-                      ? 'bg-emerald-600 text-white font-bold'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                  }`}
-                >
-                  {lang === 'en' ? 'Passed' : 'پاس شد'}
-                </button>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {lang === 'en' ? 'Grade (0-20):' : 'نمره:'}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={20}
+                  step={0.25}
+                  value={currentGrade !== undefined ? currentGrade : ''}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                    onUpdateGrade(course.id, val);
+                  }}
+                  placeholder="--"
+                  className="w-16 text-center py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 font-mono font-bold text-slate-900 dark:text-white"
+                />
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {lang === 'en' ? 'Grade (0-20):' : 'نمره:'}
-              </span>
-              <input
-                type="number"
-                min={0}
-                max={20}
-                step={0.25}
-                value={currentGrade !== undefined ? currentGrade : ''}
-                onChange={(e) => {
-                  const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                  onUpdateGrade(course.id, val);
-                }}
-                placeholder="--"
-                className="w-16 text-center py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 font-mono font-bold text-slate-900 dark:text-white"
-              />
-            </div>
+            {onUpdateTermOverride && (
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700/80 text-xs">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  {lang === 'en' ? 'Assigned Semester:' : 'ترم برنامه‌ریزی‌شده:'}
+                </span>
+                <select
+                  value={getAssignedTerm(course, progress) || 0}
+                  onChange={(e) => onUpdateTermOverride(course.id, parseInt(e.target.value, 10))}
+                  className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                >
+                  {Array.from({ length: 12 }, (_, idx) => idx + 1).map((t) => (
+                    <option key={t} value={t}>
+                      {lang === 'en' ? `Semester ${t}` : `ترم ${t}`}
+                    </option>
+                  ))}
+                  <option value={0}>{lang === 'en' ? 'Unassigned' : 'بدون ترم'}</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Prerequisite Warnings */}

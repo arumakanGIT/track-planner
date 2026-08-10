@@ -13,12 +13,14 @@ import {
 } from 'lucide-react';
 import { COURSES } from '../data/curriculumData';
 import { Course, CourseStatus, StudentProgress } from '../types';
+import { getAssignedTerm } from '../lib/curriculumEngine';
 import { exportElementAsPng } from '../lib/exportUtils';
 
 interface TranscriptViewProps {
   progress: StudentProgress;
   onUpdateStatus: (courseId: string, status: CourseStatus) => void;
   onUpdateGrade: (courseId: string, grade: number | undefined) => void;
+  onUpdateTermOverride?: (courseId: string, termNum: number) => void;
   lang: 'fa' | 'en' | 'dual';
 }
 
@@ -26,23 +28,32 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
   progress,
   onUpdateStatus,
   onUpdateGrade,
+  onUpdateTermOverride,
   lang,
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Determine max term
-  const overrideTerms = Object.values(progress.courseTermOverrides || {}) as number[];
+  const overrideTerms = (Object.values(progress.courseTermOverrides || {}).filter(
+    (t) => typeof t === 'number' && t > 0
+  )) as number[];
   const maxTerm = Math.max(8, ...overrideTerms, 1);
 
   // Group courses by term
   const termsMap: Record<number, Course[]> = {};
   for (let t = 1; t <= maxTerm; t++) {
-    termsMap[t] = COURSES.filter((c) => {
-      const assignedTerm = progress.courseTermOverrides?.[c.id] || c.term;
-      return assignedTerm === t;
-    });
+    termsMap[t] = COURSES.filter((c) => getAssignedTerm(c, progress) === t);
   }
+
+  // Find courses that are taken, in-progress, failed, or graded but not assigned to any term
+  const unassignedCourses = COURSES.filter((c) => {
+    const term = getAssignedTerm(c, progress);
+    if (term !== null) return false;
+    const status = progress.courseStatuses[c.id];
+    const grade = progress.courseGrades?.[c.id];
+    return (status && status !== 'NOT_TAKEN') || (typeof grade === 'number' && grade >= 0);
+  });
 
   // Calculate Cumulative overall stats
   let totalGradePoints = 0;
@@ -322,7 +333,27 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap justify-end">
+                            {/* Term Selector Dropdown */}
+                            {onUpdateTermOverride && (
+                              <select
+                                value={getAssignedTerm(c, progress) || 0}
+                                onChange={(e) => {
+                                  const newTerm = parseInt(e.target.value, 10);
+                                  onUpdateTermOverride(c.id, newTerm);
+                                }}
+                                className="px-2 py-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                                title={lang === 'en' ? 'Assign Semester' : 'تغییر ترم درس'}
+                              >
+                                {Array.from({ length: Math.max(8, maxTerm) }, (_, idx) => idx + 1).map((t) => (
+                                  <option key={t} value={t}>
+                                    {lang === 'en' ? `Term ${t}` : `ترم ${t}`}
+                                  </option>
+                                ))}
+                                <option value={0}>{lang === 'en' ? 'Unassigned' : 'بدون ترم'}</option>
+                              </select>
+                            )}
+
                             {/* Status Toggle Button */}
                             <button
                               onClick={() => {
@@ -376,7 +407,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
                                     }
                                   }
                                 }}
-                                className="w-24 px-2 py-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-20 sm:w-24 px-2 py-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
                               />
                             </div>
                           </div>
@@ -388,6 +419,127 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
               </div>
             );
           })}
+
+          {/* Unassigned Courses Section (if student has taken/graded courses outside terms 1..N) */}
+          {unassignedCourses.length > 0 && (
+            <div className="bg-amber-50/50 dark:bg-amber-950/20 rounded-2xl p-5 border border-amber-200 dark:border-amber-900/60 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-amber-200/60 dark:border-amber-900/60 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500 text-white font-bold text-sm flex items-center justify-center shadow-xs">
+                    ?
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                      {lang === 'en' ? 'Unassigned Courses' : 'دروس اخذشده/نمره‌دار بدون ترم مشخص'}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-mono">
+                      {unassignedCourses.length} {lang === 'en' ? 'courses pending term assignment' : 'درس بدون تخصیص به ترم'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                {unassignedCourses.map((c) => {
+                  const grade = progress.courseGrades?.[c.id];
+                  const status = progress.courseStatuses[c.id] || 'NOT_TAKEN';
+
+                  return (
+                    <div
+                      key={c.id}
+                      className="p-3 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-white dark:bg-slate-900 flex items-center justify-between gap-3"
+                    >
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200">
+                            {c.id}
+                          </span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100 text-xs truncate">
+                            {lang === 'en' ? c.titleEn : c.titleFa}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          {c.credits} {lang === 'en' ? 'credits' : 'واحد'}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap justify-end">
+                        {onUpdateTermOverride && (
+                          <select
+                            value={0}
+                            onChange={(e) => {
+                              const newTerm = parseInt(e.target.value, 10);
+                              if (newTerm > 0) {
+                                onUpdateTermOverride(c.id, newTerm);
+                              }
+                            }}
+                            className="px-2 py-1 bg-amber-50 dark:bg-amber-950/80 text-amber-900 dark:text-amber-100 border border-amber-300 dark:border-amber-800 rounded-lg text-[11px] font-mono font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                          >
+                            <option value={0}>{lang === 'en' ? '-- Select Term --' : '-- انتقال به ترم --'}</option>
+                            {Array.from({ length: Math.max(8, maxTerm) }, (_, idx) => idx + 1).map((t) => (
+                              <option key={t} value={t}>
+                                {lang === 'en' ? `Term ${t}` : `ترم ${t}`}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+
+                        <button
+                          onClick={() => {
+                            const nextStatus: Record<CourseStatus, CourseStatus> = {
+                              NOT_TAKEN: 'PASSED',
+                              PASSED: 'FAILED',
+                              FAILED: 'IN_PROGRESS',
+                              IN_PROGRESS: 'NOT_TAKEN',
+                            };
+                            onUpdateStatus(c.id, nextStatus[status]);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                            status === 'PASSED'
+                              ? 'bg-emerald-600 text-white'
+                              : status === 'FAILED'
+                              ? 'bg-rose-600 text-white'
+                              : status === 'IN_PROGRESS'
+                              ? 'bg-amber-500 text-white'
+                              : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          {status === 'PASSED'
+                            ? (lang === 'en' ? 'Passed' : 'پاس شد')
+                            : status === 'FAILED'
+                            ? (lang === 'en' ? 'Failed' : 'افتاده')
+                            : status === 'IN_PROGRESS'
+                            ? (lang === 'en' ? 'Enrolled' : 'در حال اخذ')
+                            : (lang === 'en' ? 'Not Taken' : 'اخذ نشده')}
+                        </button>
+
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="20"
+                            step="0.25"
+                            placeholder=" نمره "
+                            value={typeof grade === 'number' ? grade : ''}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              if (isNaN(val)) {
+                                onUpdateGrade(c.id, undefined);
+                              } else {
+                                const bounded = Math.min(20, Math.max(0, val));
+                                onUpdateGrade(c.id, bounded);
+                              }
+                            }}
+                            className="w-20 px-2 py-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Notes */}

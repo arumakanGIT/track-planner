@@ -208,6 +208,7 @@ export default function App() {
             progress={progress}
             onUpdateStatus={handleUpdateStatus}
             onUpdateGrade={handleUpdateGrade}
+            onUpdateTermOverride={handleUpdateTermOverride}
             lang={lang}
           />
         )}
@@ -281,6 +282,7 @@ export default function App() {
         progress={progress}
         onUpdateStatus={handleUpdateStatus}
         onUpdateGrade={handleUpdateGrade}
+        onUpdateTermOverride={handleUpdateTermOverride}
         lang={lang}
       />
 
