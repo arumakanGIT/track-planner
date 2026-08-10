@@ -257,7 +257,7 @@ export const AcademicRulesView: React.FC<AcademicRulesViewProps> = ({ lang }) =>
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                 <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                  <span className="font-bold text-slate-900 dark:text-white block">{lang === 'en' ? '31119 - General Persian' : '31119 - فارسی عمومی'}</span>
+                  <span className="font-bold text-slate-900 dark:text-white block">{lang === 'en' ? '31119 - General Persian' : '31119 - آشنایی با ادبیات فارسی'}</span>
                   <span className="text-[11px] text-slate-500">{lang === 'en' ? '3 Credits (Persian Literature)' : '۳ واحد (آشنایی با ادبیات فارسی)'}</span>
                 </div>
                 <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60">
@@ -306,7 +306,7 @@ export const AcademicRulesView: React.FC<AcademicRulesViewProps> = ({ lang }) =>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5 list-disc list-inside">
                     <li>37123 - {lang === 'en' ? 'Islamic Ethics' : 'اخلاق اسلامی'}</li>
                     <li>37126 - {lang === 'en' ? 'Philosophy of Ethics' : 'فلسفه اخلاق'}</li>
-                    <li>37127 - {lang === 'en' ? 'Life Regulations (Applied Ethics)' : 'آیین زندگی (اخلاق کاربردی)'}</li>
+                    <li>37127 - {lang === 'en' ? 'Life Regulations (Applied Ethics)' : 'آیین زندگی  '}</li>
                     <li>37128 - {lang === 'en' ? 'Practical Mysticism in Islam' : 'عرفان عملی در اسلام'}</li>
                   </ul>
                 </div>
