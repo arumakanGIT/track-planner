@@ -69,7 +69,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ lang }) => {
           <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
             {lang === 'en'
               ? 'If you encounter any bugs, have feature requests for other academic majors, or have any other feedback, feel free to reach out via the contacts below:'
-              : 'اگر باگ، پیشنهاد توسعه برای بقیه رشته‌ها، یا هر نوع پیشنهاد دیگری داشتید، خوشحال می‌شوم از راه‌های ارتباطی زیر اطلاع دهید:'}
+              : 'اگر خواستید باگ را گزارش دهید، یا اگر پیشنهاد توسعه برای بقیه رشته‌ها یا هر نوع پیشنهاد دیگری داشتید، خوشحال می‌شوم از راه‌های ارتباطی زیر اطلاع دهید:'}
           </p>
         </div>
 
