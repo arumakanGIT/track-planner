@@ -139,10 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
               <div>
                 <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>{lang === 'en' ? 'CE Curriculum & Specialization Tracker' : 'برنامه‌ریز و چارت برنامه‌سازی مهندسی کامپیوتر'}</span>
-                  <span className="text-xs px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-mono font-medium border border-indigo-200 dark:border-indigo-800">
-                    {lang === 'en' ? 'Batch 2021' : 'ورودی ۱۴۰۰'}
-                  </span>
+                  <span>{lang === 'en' ? 'CE Curriculum Flowchart' : 'چارت برنامه‌سازی مهندسی کامپیوتر'}</span>
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {lang === 'en'

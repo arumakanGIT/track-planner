@@ -232,131 +232,118 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
       {/* Main Exportable Flowchart Container */}
       <div id="term-tree-chart-canvas" className="bg-slate-100/50 dark:bg-slate-950/40 p-3 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 space-y-4">
         
-        {/* Bookmarked Courses Horizontal Bar */}
-        {(bookmarkedCourses.length > 0 || draggedCourseId !== null) && (
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = 'move';
-              if (dragOverTerm !== -1) {
-                setDragOverTerm(-1);
-              }
-            }}
-            onDragLeave={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                setDragOverTerm(null);
-              }
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              const courseId = e.dataTransfer.getData('text/plain') || draggedCourseId;
-              if (courseId) {
-                if (!bookmarkedIds.includes(courseId) && onToggleBookmark) {
-                  onToggleBookmark(courseId);
-                }
-                onUpdateTermOverride(courseId, 0);
-              }
+        {/* Bookmarked Courses Horizontal Bar - Always visible above terms for smooth drag-and-drop */}
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (dragOverTerm !== -1) {
+              setDragOverTerm(-1);
+            }
+          }}
+          onDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
               setDragOverTerm(null);
-              setDraggedCourseId(null);
-            }}
-            className={`p-3 rounded-2xl border-2 transition-all duration-200 ${
-              dragOverTerm === -1
-                ? 'bg-amber-100/90 dark:bg-amber-950/70 border-amber-500 border-dashed ring-4 ring-amber-400/40'
-                : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 border-dashed'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-amber-500 text-slate-950 rounded-lg">
-                  <Bookmark className="w-3.5 h-3.5 fill-slate-950" />
-                </div>
-                <span className="font-bold text-xs text-amber-950 dark:text-amber-200">
-                  {lang === 'en' ? 'Bookmarked Courses' : 'دروس نشان‌شده (مارک‌شده)'} ({bookmarkedCourses.length})
-                </span>
+            }
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const courseId = e.dataTransfer.getData('text/plain') || draggedCourseId;
+            if (courseId) {
+              if (!bookmarkedIds.includes(courseId) && onToggleBookmark) {
+                onToggleBookmark(courseId);
+              }
+              onUpdateTermOverride(courseId, 0);
+            }
+            setDragOverTerm(null);
+            setDraggedCourseId(null);
+          }}
+          className={`px-3 py-2 sm:py-2.5 rounded-2xl border-2 transition-all duration-200 ${
+            dragOverTerm === -1
+              ? 'bg-amber-100/90 dark:bg-amber-950/80 border-amber-500 border-dashed ring-4 ring-amber-400/40'
+              : bookmarkedCourses.length > 0
+              ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800/80 border-dashed'
+              : 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300/60 dark:border-amber-900/40 border-dashed'
+          }`}
+        >
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <div className="p-1 bg-amber-500 text-slate-950 rounded-lg shrink-0">
+                <Bookmark className="w-3.5 h-3.5 fill-slate-950" />
               </div>
-              <span className="text-[10px] text-amber-800/80 dark:text-amber-300/80">
-                {lang === 'en'
-                  ? 'Drag to a term column or drop courses here to bookmark'
-                  : 'برای اضافه کردن به ترم، درس را به ستون ترم درگ کنید یا درس‌ها را اینجا رها کنید'}
+              <span className="font-bold text-xs text-amber-950 dark:text-amber-200">
+                {lang === 'en' ? 'Bookmarked Courses' : 'دروس نشان‌شده (مارک‌شده)'} ({bookmarkedCourses.length})
               </span>
             </div>
-
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar min-h-[52px]">
-              {bookmarkedCourses.length === 0 ? (
-                <div className="w-full text-center py-2 text-xs text-amber-700 dark:text-amber-400 font-medium">
-                  {lang === 'en' ? 'Drop a course here to bookmark it!' : 'درس را بکشید و اینجا رها کنید تا نشان‌دار شود'}
-                </div>
-              ) : (
-                bookmarkedCourses.map((course) => {
-                  const status = progress.courseStatuses[course.id] || 'NOT_TAKEN';
-                  const isBeingDragged = draggedCourseId === course.id;
-
-                  let bgClass = 'bg-white dark:bg-slate-900';
-                  let borderClass = 'border-amber-300 dark:border-amber-700';
-
-                  if (status === 'PASSED') {
-                    bgClass = 'bg-emerald-50 dark:bg-emerald-950/50';
-                    borderClass = 'border-emerald-400 dark:border-emerald-700';
-                  } else if (status === 'IN_PROGRESS') {
-                    bgClass = 'bg-amber-100 dark:bg-amber-950/60';
-                    borderClass = 'border-amber-400 dark:border-amber-600';
-                  }
-
-                  return (
-                    <div
-                      key={course.id}
-                      draggable={true}
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('text/plain', course.id);
-                        e.dataTransfer.effectAllowed = 'move';
-                        setDraggedCourseId(course.id);
-                      }}
-                      onDragEnd={() => setDraggedCourseId(null)}
-                      onClick={() => onOpenCourseModal(course)}
-                      className={`p-2.5 rounded-xl border transition-all duration-200 shadow-2xs relative group cursor-grab active:cursor-grabbing shrink-0 min-w-[150px] max-w-[200px] ${bgClass} ${borderClass} ${
-                        isBeingDragged ? 'opacity-40 scale-95 border-dashed border-indigo-500' : ''
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-mono text-[10px] font-bold text-indigo-700 dark:text-indigo-300">
-                          {course.id}
-                        </span>
-                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                          {course.credits} {lang === 'en' ? 'cr' : 'واحد'}
-                        </span>
-                      </div>
-                      <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5">
-                        {lang === 'en' ? course.titleEn : course.titleFa}
-                      </div>
-                      <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onToggleBookmark) onToggleBookmark(course.id);
-                          }}
-                          className="p-1 text-amber-500 hover:text-rose-500 transition rounded-md hover:bg-amber-100 dark:hover:bg-amber-900/50"
-                          title={lang === 'en' ? 'Unmark course' : 'حذف نشان'}
-                        >
-                          <Bookmark className="w-3.5 h-3.5 fill-current" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenCourseModal(course);
-                          }}
-                          className="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
-                          title={lang === 'en' ? 'Details' : 'جزئیات'}
-                        >
-                          <Info className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+            <span className="text-[10px] text-amber-800/80 dark:text-amber-300/80 font-medium">
+              {lang === 'en'
+                ? 'Drag to a term column or drop courses here to bookmark'
+                : 'برای اضافه کردن به ترم، درس را به ستون ترم درگ کنید یا درس‌ها را اینجا رها کنید'}
+            </span>
           </div>
-        )}
+
+          {bookmarkedCourses.length > 0 && (
+            <div className="flex items-center gap-2.5 overflow-x-auto pt-2 pb-1 no-scrollbar min-h-[52px]">
+              {bookmarkedCourses.map((course) => {
+                const status = progress.courseStatuses[course.id] || 'NOT_TAKEN';
+                const isBeingDragged = draggedCourseId === course.id;
+
+                let bgClass = 'bg-white dark:bg-slate-900';
+                let borderClass = 'border-amber-300 dark:border-amber-700';
+
+                if (status === 'PASSED') {
+                  bgClass = 'bg-emerald-50 dark:bg-emerald-950/50';
+                  borderClass = 'border-emerald-400 dark:border-emerald-700';
+                } else if (status === 'IN_PROGRESS') {
+                  bgClass = 'bg-amber-100 dark:bg-amber-950/60';
+                  borderClass = 'border-amber-400 dark:border-amber-600';
+                }
+
+                return (
+                  <div
+                    key={course.id}
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', course.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                      setDraggedCourseId(course.id);
+                    }}
+                    onDragEnd={() => setDraggedCourseId(null)}
+                    onClick={() => onOpenCourseModal(course)}
+                    className={`p-2.5 rounded-xl border transition-all duration-200 shadow-2xs relative group cursor-grab active:cursor-grabbing shrink-0 min-w-[150px] max-w-[200px] ${bgClass} ${borderClass} ${
+                      isBeingDragged ? 'opacity-40 scale-95 border-dashed border-indigo-500' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-mono text-[10px] font-bold text-indigo-700 dark:text-indigo-300">
+                        {course.id}
+                      </span>
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                        {course.credits} {lang === 'en' ? 'cr' : 'واحد'}
+                      </span>
+                    </div>
+                    <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5">
+                      {lang === 'en' ? course.titleEn : course.titleFa}
+                    </div>
+                    <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onToggleBookmark) onToggleBookmark(course.id);
+                        }}
+                        className="p-1 text-amber-500 hover:text-rose-500 transition rounded-md hover:bg-amber-100 dark:hover:bg-amber-900/50 flex items-center gap-1 font-bold"
+                        title={lang === 'en' ? 'Unmark course' : 'حذف نشان'}
+                      >
+                        <Bookmark className="w-3.5 h-3.5 fill-current" />
+                        <span className="text-[9px]">{lang === 'en' ? 'Unmark' : 'حذف'}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Grid Flowchart Layout (Terms 1 to customTermCount) */}
         <div className="overflow-x-auto pb-4 pt-1 no-scrollbar">
@@ -570,36 +557,22 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                                 </span>
                               </button>
 
-                              <div className="flex items-center gap-1">
-                                {onToggleBookmark && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onToggleBookmark(course.id);
-                                    }}
-                                    className={`p-1 rounded-md transition ${
-                                      bookmarkedIds.includes(course.id)
-                                        ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/60'
-                                        : 'text-slate-400 hover:text-amber-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/50'
-                                    }`}
-                                    title={bookmarkedIds.includes(course.id) ? (lang === 'en' ? 'Unmark course' : 'حذف نشان') : (lang === 'en' ? 'Bookmark course' : 'نشان‌کردن')}
-                                  >
-                                    <Bookmark className={`w-3.5 h-3.5 ${bookmarkedIds.includes(course.id) ? 'fill-current' : ''}`} />
-                                  </button>
-                                )}
-
-                                {/* Details Info Modal Button */}
+                              {onToggleBookmark && (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    onOpenCourseModal(course);
+                                    onToggleBookmark(course.id);
                                   }}
-                                  className="p-1 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition hover:bg-indigo-50 dark:hover:bg-indigo-950/50 flex items-center gap-0.5 shrink-0"
-                                  title={lang === 'en' ? 'Course details' : 'جزئیات کامل درس'}
+                                  className={`p-1 rounded-md transition ${
+                                    bookmarkedIds.includes(course.id)
+                                      ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/60'
+                                      : 'text-slate-400 hover:text-amber-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/50'
+                                  }`}
+                                  title={bookmarkedIds.includes(course.id) ? (lang === 'en' ? 'Unmark course' : 'حذف نشان') : (lang === 'en' ? 'Bookmark course' : 'نشان‌کردن')}
                                 >
-                                  <Info className="w-3.5 h-3.5" />
+                                  <Bookmark className={`w-3.5 h-3.5 ${bookmarkedIds.includes(course.id) ? 'fill-current' : ''}`} />
                                 </button>
-                              </div>
+                              )}
 
                             </div>
 
