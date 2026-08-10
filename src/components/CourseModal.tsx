@@ -2,10 +2,12 @@ import React from 'react';
 import {
   AlertTriangle,
   BookOpen,
+  Bookmark,
   CheckCircle,
   Clock,
   Info,
   Layers,
+  Star,
   X,
   XCircle,
 } from 'lucide-react';
@@ -20,6 +22,7 @@ interface CourseModalProps {
   onUpdateStatus: (courseId: string, status: CourseStatus) => void;
   onUpdateGrade: (courseId: string, grade: number | undefined) => void;
   onUpdateTermOverride?: (courseId: string, termNum: number) => void;
+  onToggleBookmark?: (courseId: string) => void;
   lang: 'fa' | 'en' | 'dual';
 }
 
@@ -30,12 +33,14 @@ export const CourseModal: React.FC<CourseModalProps> = ({
   onUpdateStatus,
   onUpdateGrade,
   onUpdateTermOverride,
+  onToggleBookmark,
   lang,
 }) => {
   if (!course) return null;
 
   const currentStatus = progress.courseStatuses[course.id] || 'NOT_TAKEN';
   const currentGrade = progress.courseGrades?.[course.id];
+  const isBookmarked = (progress.bookmarkedCourseIds || []).includes(course.id);
   const warnings = validateCourseRules(course, progress.courseStatuses);
 
   // Clusters this course belongs to
@@ -65,12 +70,29 @@ export const CourseModal: React.FC<CourseModalProps> = ({
             <p className="text-xs text-indigo-200 font-sans">{course.titleEn}</p>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {onToggleBookmark && (
+              <button
+                onClick={() => onToggleBookmark(course.id)}
+                className={`p-2 rounded-xl transition flex items-center gap-1 text-xs font-bold ${
+                  isBookmarked
+                    ? 'bg-amber-500 text-slate-950 shadow-xs'
+                    : 'bg-white/10 hover:bg-white/20 text-slate-200'
+                }`}
+                title={isBookmarked ? (lang === 'en' ? 'Unmark course' : 'حذف از نشان‌شده‌ها') : (lang === 'en' ? 'Bookmark course' : 'نشان‌کردن درس')}
+              >
+                <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-slate-950' : ''}`} />
+                <span>{isBookmarked ? (lang === 'en' ? 'Marked' : 'نشان‌شده') : (lang === 'en' ? 'Mark' : 'نشان‌کردن')}</span>
+              </button>
+            )}
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content Body */}

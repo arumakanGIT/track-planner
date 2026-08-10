@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   Award,
   BookOpen,
+  Bookmark,
   Check,
   CheckCircle,
   ChevronRight,
@@ -32,6 +33,7 @@ interface FlowchartViewProps {
   onUpdateStatus: (courseId: string, status: CourseStatus) => void;
   onUpdateGrade?: (courseId: string, grade: number | undefined) => void;
   onUpdateTermOverride: (courseId: string, termNum: number) => void;
+  onToggleBookmark?: (courseId: string) => void;
   onOpenCourseModal: (course: Course) => void;
   lang: 'fa' | 'en' | 'dual';
 }
@@ -41,6 +43,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
   onUpdateStatus,
   onUpdateGrade,
   onUpdateTermOverride,
+  onToggleBookmark,
   onOpenCourseModal,
   lang,
 }) => {
@@ -65,24 +68,6 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
 
   const [customTermCount, setCustomTermCount] = useState<number>(maxOverrideTerm);
 
-  // Detect mobile / tablet touch device or small screen for showing term selector selectbox
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    const isSmallScreen = window.innerWidth < 1024;
-    return hasTouch || isSmallScreen;
-  });
-
-  useEffect(() => {
-    const checkDevice = () => {
-      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      const isSmallScreen = window.innerWidth < 1024;
-      setIsMobileOrTablet(hasTouch || isSmallScreen);
-    };
-    window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
-  }, []);
-
   // Keep customTermCount in sync if new max override term is added anywhere
   useEffect(() => {
     setCustomTermCount((prev) => Math.max(prev, maxOverrideTerm));
@@ -91,10 +76,13 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
   const activeFocusId = hoveredCourseId || selectedCourseId;
   const activeFocusCourse = activeFocusId ? getCourseById(activeFocusId) : null;
 
-  // Derive term lists (1..customTermCount)
+  const bookmarkedIds = progress.bookmarkedCourseIds || [];
+  const bookmarkedCourses = COURSES.filter((c) => bookmarkedIds.includes(c.id));
+
+  // Derive term lists (1..customTermCount) - exclude bookmarked courses from term columns
   const termsMap: Record<number, Course[]> = {};
   for (let t = 1; t <= customTermCount; t++) {
-    termsMap[t] = COURSES.filter((c) => getAssignedTerm(c, progress) === t);
+    termsMap[t] = COURSES.filter((c) => getAssignedTerm(c, progress) === t && !bookmarkedIds.includes(c.id));
   }
 
   // Calculate term credit sums
@@ -244,6 +232,132 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
       {/* Main Exportable Flowchart Container */}
       <div id="term-tree-chart-canvas" className="bg-slate-100/50 dark:bg-slate-950/40 p-3 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 space-y-4">
         
+        {/* Bookmarked Courses Horizontal Bar */}
+        {(bookmarkedCourses.length > 0 || draggedCourseId !== null) && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              if (dragOverTerm !== -1) {
+                setDragOverTerm(-1);
+              }
+            }}
+            onDragLeave={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setDragOverTerm(null);
+              }
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const courseId = e.dataTransfer.getData('text/plain') || draggedCourseId;
+              if (courseId) {
+                if (!bookmarkedIds.includes(courseId) && onToggleBookmark) {
+                  onToggleBookmark(courseId);
+                }
+                onUpdateTermOverride(courseId, 0);
+              }
+              setDragOverTerm(null);
+              setDraggedCourseId(null);
+            }}
+            className={`p-3 rounded-2xl border-2 transition-all duration-200 ${
+              dragOverTerm === -1
+                ? 'bg-amber-100/90 dark:bg-amber-950/70 border-amber-500 border-dashed ring-4 ring-amber-400/40'
+                : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 border-dashed'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-amber-500 text-slate-950 rounded-lg">
+                  <Bookmark className="w-3.5 h-3.5 fill-slate-950" />
+                </div>
+                <span className="font-bold text-xs text-amber-950 dark:text-amber-200">
+                  {lang === 'en' ? 'Bookmarked Courses' : 'دروس نشان‌شده (مارک‌شده)'} ({bookmarkedCourses.length})
+                </span>
+              </div>
+              <span className="text-[10px] text-amber-800/80 dark:text-amber-300/80">
+                {lang === 'en'
+                  ? 'Drag to a term column or drop courses here to bookmark'
+                  : 'برای اضافه کردن به ترم، درس را به ستون ترم درگ کنید یا درس‌ها را اینجا رها کنید'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar min-h-[52px]">
+              {bookmarkedCourses.length === 0 ? (
+                <div className="w-full text-center py-2 text-xs text-amber-700 dark:text-amber-400 font-medium">
+                  {lang === 'en' ? 'Drop a course here to bookmark it!' : 'درس را بکشید و اینجا رها کنید تا نشان‌دار شود'}
+                </div>
+              ) : (
+                bookmarkedCourses.map((course) => {
+                  const status = progress.courseStatuses[course.id] || 'NOT_TAKEN';
+                  const isBeingDragged = draggedCourseId === course.id;
+
+                  let bgClass = 'bg-white dark:bg-slate-900';
+                  let borderClass = 'border-amber-300 dark:border-amber-700';
+
+                  if (status === 'PASSED') {
+                    bgClass = 'bg-emerald-50 dark:bg-emerald-950/50';
+                    borderClass = 'border-emerald-400 dark:border-emerald-700';
+                  } else if (status === 'IN_PROGRESS') {
+                    bgClass = 'bg-amber-100 dark:bg-amber-950/60';
+                    borderClass = 'border-amber-400 dark:border-amber-600';
+                  }
+
+                  return (
+                    <div
+                      key={course.id}
+                      draggable={true}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', course.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                        setDraggedCourseId(course.id);
+                      }}
+                      onDragEnd={() => setDraggedCourseId(null)}
+                      onClick={() => onOpenCourseModal(course)}
+                      className={`p-2.5 rounded-xl border transition-all duration-200 shadow-2xs relative group cursor-grab active:cursor-grabbing shrink-0 min-w-[150px] max-w-[200px] ${bgClass} ${borderClass} ${
+                        isBeingDragged ? 'opacity-40 scale-95 border-dashed border-indigo-500' : ''
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-mono text-[10px] font-bold text-indigo-700 dark:text-indigo-300">
+                          {course.id}
+                        </span>
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                          {course.credits} {lang === 'en' ? 'cr' : 'واحد'}
+                        </span>
+                      </div>
+                      <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5">
+                        {lang === 'en' ? course.titleEn : course.titleFa}
+                      </div>
+                      <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onToggleBookmark) onToggleBookmark(course.id);
+                          }}
+                          className="p-1 text-amber-500 hover:text-rose-500 transition rounded-md hover:bg-amber-100 dark:hover:bg-amber-900/50"
+                          title={lang === 'en' ? 'Unmark course' : 'حذف نشان'}
+                        >
+                          <Bookmark className="w-3.5 h-3.5 fill-current" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenCourseModal(course);
+                          }}
+                          className="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                          title={lang === 'en' ? 'Details' : 'جزئیات'}
+                        >
+                          <Info className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Grid Flowchart Layout (Terms 1 to customTermCount) */}
         <div className="overflow-x-auto pb-4 pt-1 no-scrollbar">
           <div
@@ -277,6 +391,9 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                     e.preventDefault();
                     const courseId = e.dataTransfer.getData('text/plain') || draggedCourseId;
                     if (courseId) {
+                      if (bookmarkedIds.includes(courseId) && onToggleBookmark) {
+                        onToggleBookmark(courseId);
+                      }
                       onUpdateTermOverride(courseId, termNum);
                     }
                     setDragOverTerm(null);
@@ -453,39 +570,36 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                                 </span>
                               </button>
 
-                              {/* Term Selector dropdown for Mobile / Tablet */}
-                              {isMobileOrTablet && (
-                                <select
-                                  value={termNum}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onChange={(e) => {
-                                    e.stopPropagation();
-                                    const newTerm = parseInt(e.target.value, 10);
-                                    onUpdateTermOverride(course.id, newTerm);
-                                  }}
-                                  className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 rounded-md text-[10px] font-mono font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                                  title={lang === 'en' ? 'Change semester' : 'تغییر ترم درس'}
-                                >
-                                  {Array.from({ length: Math.max(8, customTermCount) }, (_, idx) => idx + 1).map((t) => (
-                                    <option key={t} value={t}>
-                                      {lang === 'en' ? `T${t}` : `ترم ${t}`}
-                                    </option>
-                                  ))}
-                                  <option value={0}>{lang === 'en' ? 'Remove' : 'حذف'}</option>
-                                </select>
-                              )}
+                              <div className="flex items-center gap-1">
+                                {onToggleBookmark && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onToggleBookmark(course.id);
+                                    }}
+                                    className={`p-1 rounded-md transition ${
+                                      bookmarkedIds.includes(course.id)
+                                        ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/60'
+                                        : 'text-slate-400 hover:text-amber-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/50'
+                                    }`}
+                                    title={bookmarkedIds.includes(course.id) ? (lang === 'en' ? 'Unmark course' : 'حذف نشان') : (lang === 'en' ? 'Bookmark course' : 'نشان‌کردن')}
+                                  >
+                                    <Bookmark className={`w-3.5 h-3.5 ${bookmarkedIds.includes(course.id) ? 'fill-current' : ''}`} />
+                                  </button>
+                                )}
 
-                              {/* Details Info Modal Button */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onOpenCourseModal(course);
-                                }}
-                                className="p-1 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition hover:bg-indigo-50 dark:hover:bg-indigo-950/50 flex items-center gap-0.5 shrink-0"
-                                title={lang === 'en' ? 'Course details' : 'جزئیات کامل درس'}
-                              >
-                                <Info className="w-3.5 h-3.5" />
-                              </button>
+                                {/* Details Info Modal Button */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenCourseModal(course);
+                                  }}
+                                  className="p-1 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition hover:bg-indigo-50 dark:hover:bg-indigo-950/50 flex items-center gap-0.5 shrink-0"
+                                  title={lang === 'en' ? 'Course details' : 'جزئیات کامل درس'}
+                                >
+                                  <Info className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
 
                             </div>
 

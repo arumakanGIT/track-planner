@@ -123,6 +123,18 @@ export default function App() {
     }));
   };
 
+  const handleToggleBookmark = (courseId: string) => {
+    setProgress((prev) => {
+      const current = prev.bookmarkedCourseIds || [];
+      const exists = current.includes(courseId);
+      const updated = exists ? current.filter((id) => id !== courseId) : [...current, courseId];
+      return {
+        ...prev,
+        bookmarkedCourseIds: updated,
+      };
+    });
+  };
+
   const handleUpdateTargetCluster = (clusterId: string) => {
     setProgress((prev) => ({
       ...prev,
@@ -188,6 +200,7 @@ export default function App() {
             onUpdateStatus={handleUpdateStatus}
             onUpdateGrade={handleUpdateGrade}
             onUpdateTermOverride={handleUpdateTermOverride}
+            onToggleBookmark={handleToggleBookmark}
             onOpenCourseModal={setSelectedModalCourse}
             lang={lang}
           />
@@ -198,6 +211,7 @@ export default function App() {
             progress={progress}
             onUpdateStatus={handleUpdateStatus}
             onUpdateGrade={handleUpdateGrade}
+            onToggleBookmark={handleToggleBookmark}
             onOpenCourseModal={setSelectedModalCourse}
             lang={lang}
           />
@@ -283,6 +297,7 @@ export default function App() {
         onUpdateStatus={handleUpdateStatus}
         onUpdateGrade={handleUpdateGrade}
         onUpdateTermOverride={handleUpdateTermOverride}
+        onToggleBookmark={handleToggleBookmark}
         lang={lang}
       />
 

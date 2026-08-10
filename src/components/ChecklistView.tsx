@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   AlertTriangle,
   Award,
+  Bookmark,
   CheckCircle,
   Clock,
   Filter,
@@ -9,6 +10,7 @@ import {
   Layers,
   Lock,
   Search,
+  Star,
   XCircle,
 } from 'lucide-react';
 import { COURSES } from '../data/curriculumData';
@@ -19,6 +21,7 @@ interface ChecklistViewProps {
   progress: StudentProgress;
   onUpdateStatus: (courseId: string, status: CourseStatus) => void;
   onUpdateGrade: (courseId: string, grade: number | undefined) => void;
+  onToggleBookmark?: (courseId: string) => void;
   onOpenCourseModal: (course: Course) => void;
   lang: 'fa' | 'en' | 'dual';
 }
@@ -27,18 +30,23 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
   progress,
   onUpdateStatus,
   onUpdateGrade,
+  onToggleBookmark,
   onOpenCourseModal,
   lang,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<'all' | 'tree' | 'specialized' | 'general_elective'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'tree' | 'specialized' | 'general_elective' | 'bookmarked'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PASSED' | 'IN_PROGRESS' | 'NOT_TAKEN' | 'UNLOCKED'>('ALL');
+
+  const bookmarkedIds = progress.bookmarkedCourseIds || [];
+  const bookmarkedCourses = COURSES.filter((c) => bookmarkedIds.includes(c.id));
 
   const filteredCourses = COURSES.filter((course) => {
     // Category match
     if (activeCategory === 'tree' && course.type !== 'tree' && course.type !== 'general_core') return false;
     if (activeCategory === 'specialized' && course.type !== 'specialized') return false;
     if (activeCategory === 'general_elective' && course.type !== 'general_elective') return false;
+    if (activeCategory === 'bookmarked' && !bookmarkedIds.includes(course.id)) return false;
 
     // Search query match
     if (searchQuery.trim()) {
@@ -114,6 +122,18 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
             >
               {lang === 'en' ? 'General Electives' : 'دروس اختیاری'}
             </button>
+
+            <button
+              onClick={() => setActiveCategory('bookmarked')}
+              className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap flex items-center gap-1.5 ${
+                activeCategory === 'bookmarked'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs font-bold'
+                  : 'text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30'
+              }`}
+            >
+              <Bookmark className="w-3.5 h-3.5 fill-current" />
+              <span>{lang === 'en' ? `Bookmarked (${bookmarkedCourses.length})` : `دروس نشان‌شده (${bookmarkedCourses.length})`}</span>
+            </button>
           </div>
 
           {/* Search Input */}
@@ -165,6 +185,57 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
         </div>
 
       </div>
+
+      {/* Bookmarked Courses Banner Section */}
+      {bookmarkedCourses.length > 0 && activeCategory !== 'bookmarked' && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-slate-900 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/60 shadow-xs space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-amber-500 text-slate-950 rounded-lg">
+                <Bookmark className="w-4 h-4 fill-slate-950" />
+              </div>
+              <h3 className="font-bold text-xs text-amber-950 dark:text-amber-200">
+                {lang === 'en' ? 'Bookmarked Courses' : 'دروس نشان‌شده (مارک‌شده)'} ({bookmarkedCourses.length})
+              </h3>
+            </div>
+            <button
+              onClick={() => setActiveCategory('bookmarked')}
+              className="text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline"
+            >
+              {lang === 'en' ? 'View all bookmarked' : 'مشاهده همه نشان‌شده‌ها'}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {bookmarkedCourses.map((c) => (
+              <div
+                key={c.id}
+                onClick={() => onOpenCourseModal(c)}
+                className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/80 flex items-center gap-2 text-xs shrink-0 cursor-pointer hover:border-amber-400 transition"
+              >
+                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300">
+                  {c.id}
+                </span>
+                <span className="font-bold text-slate-900 dark:text-slate-100 max-w-[140px] truncate">
+                  {lang === 'en' ? c.titleEn : c.titleFa}
+                </span>
+                {onToggleBookmark && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleBookmark(c.id);
+                    }}
+                    className="text-amber-500 hover:text-rose-500 transition p-0.5"
+                    title={lang === 'en' ? 'Remove bookmark' : 'حذف نشان'}
+                  >
+                    <Bookmark className="w-3.5 h-3.5 fill-current" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Courses Checklist Table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
@@ -354,15 +425,30 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                         />
                       </td>
 
-                      {/* Details Modal Trigger */}
+                      {/* Details & Bookmark Actions */}
                       <td className="py-3 px-4 text-center">
-                        <button
-                          onClick={() => onOpenCourseModal(course)}
-                          className="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-                          title={lang === 'en' ? 'View Details' : 'مشاهده جزئیات'}
-                        >
-                          <Info className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          {onToggleBookmark && (
+                            <button
+                              onClick={() => onToggleBookmark(course.id)}
+                              className={`p-1.5 rounded-lg transition ${
+                                bookmarkedIds.includes(course.id)
+                                  ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/60'
+                                  : 'text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                              }`}
+                              title={bookmarkedIds.includes(course.id) ? (lang === 'en' ? 'Unmark course' : 'حذف نشان') : (lang === 'en' ? 'Bookmark course' : 'نشان‌کردن')}
+                            >
+                              <Bookmark className={`w-4 h-4 ${bookmarkedIds.includes(course.id) ? 'fill-current' : ''}`} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => onOpenCourseModal(course)}
+                            className="p-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+                            title={lang === 'en' ? 'View Details' : 'مشاهده جزئیات'}
+                          >
+                            <Info className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
