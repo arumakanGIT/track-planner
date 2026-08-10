@@ -295,10 +295,10 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                 let borderClass = 'border-amber-300 dark:border-amber-700';
 
                 if (status === 'PASSED') {
-                  bgClass = 'bg-emerald-50 dark:bg-emerald-950/50';
+                  bgClass = 'bg-emerald-100/90 dark:bg-emerald-950/50';
                   borderClass = 'border-emerald-400 dark:border-emerald-700';
                 } else if (status === 'IN_PROGRESS') {
-                  bgClass = 'bg-amber-100 dark:bg-amber-950/60';
+                  bgClass = 'bg-amber-100/90 dark:bg-amber-950/60';
                   borderClass = 'border-amber-400 dark:border-amber-600';
                 }
 
@@ -395,7 +395,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                   <div className={`p-2.5 rounded-xl text-center shadow-2xs flex flex-col items-center justify-between gap-1 transition-all border ${
                     isTargetDrop
                       ? 'bg-indigo-600 text-white border-indigo-500 ring-2 ring-indigo-400'
-                      : 'bg-indigo-50/90 dark:bg-slate-900 text-indigo-950 dark:text-white border-indigo-200/80 dark:border-slate-800'
+                      : 'bg-indigo-100/80 dark:bg-slate-900 text-indigo-950 dark:text-white border-indigo-300/80 dark:border-slate-800'
                   }`}>
                     <div className="flex items-center justify-between w-full">
                       <span className="font-bold text-xs">
@@ -409,8 +409,8 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <div className="text-[10px] text-indigo-700 dark:text-slate-300 font-mono font-medium">
-                      {termCredits} {lang === 'en' ? 'Credits' : 'واحد'}
+                    <div className="text-[10px] text-indigo-700 dark:text-slate-300 font-sans font-medium">
+                      <span className="font-mono">{termCredits}</span> {lang === 'en' ? 'Credits' : 'واحد'}
                     </div>
                   </div>
 
@@ -453,17 +453,17 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                         let bgClass = 'bg-white dark:bg-slate-800';
 
                         if (status === 'PASSED') {
-                          bgClass = 'bg-emerald-50/90 dark:bg-emerald-950/40';
-                          borderClass = 'border-emerald-300 dark:border-emerald-700/80';
+                          bgClass = 'bg-emerald-100/80 dark:bg-emerald-950/40';
+                          borderClass = 'border-emerald-400 dark:border-emerald-700/80';
                         } else if (status === 'IN_PROGRESS') {
-                          bgClass = 'bg-amber-50/90 dark:bg-amber-950/40';
-                          borderClass = 'border-amber-300 dark:border-amber-700/80';
+                          bgClass = 'bg-amber-100/90 dark:bg-amber-950/40';
+                          borderClass = 'border-amber-400 dark:border-amber-700/80';
                         } else if (status === 'FAILED') {
-                          bgClass = 'bg-rose-50/90 dark:bg-rose-950/40';
-                          borderClass = 'border-rose-300 dark:border-rose-800';
+                          bgClass = 'bg-rose-100/80 dark:bg-rose-950/40';
+                          borderClass = 'border-rose-400 dark:border-rose-800';
                         } else if (hasPrereqMissing) {
-                          bgClass = 'bg-slate-100/70 dark:bg-slate-900/60';
-                          borderClass = 'border-slate-200 dark:border-slate-800';
+                          bgClass = 'bg-slate-100/80 dark:bg-slate-900/60';
+                          borderClass = 'border-slate-300 dark:border-slate-800';
                         }
 
                         if (isFocusTarget) {
@@ -617,7 +617,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
             </button>
           </div>
 
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
             {lang === 'en' ? `${COURSES.length} Total Courses in Curriculum` : `${COURSES.length} درس کل در سامانه چارت`}
           </div>
         </div>
@@ -747,7 +747,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                                 {lang === 'en' ? course.titleEn : course.titleFa}
                               </span>
                             </div>
-                            <div className="text-[10px] text-slate-500 font-mono">
+                            <div className="text-[10px] text-slate-500 font-sans">
                               {course.credits} {lang === 'en' ? 'Credits' : 'واحد'}
                             </div>
                           </div>
@@ -864,7 +864,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-slate-500 font-mono">
+                            <div className="text-[10px] text-slate-500 font-sans">
                               {course.credits} {lang === 'en' ? 'Credits' : 'واحد'} • {course.type === 'tree' ? (lang === 'en' ? 'Tree Core' : 'اصلی چارت') : (lang === 'en' ? 'Elective / General' : 'اختیاری / عمومی')}
                             </div>
                           </div>

@@ -139,11 +139,11 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
               <div>
                 <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>{lang === 'en' ? 'CE Curriculum Flowchart' : 'چارت برنامه‌سازی مهندسی کامپیوتر'}</span>
+                  <span>{lang === 'en' ? 'SUT-CE Curriculum Flowchart' : 'چارت مهندسی کامپیوتر شریف'}</span>
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {lang === 'en'
-                    ? 'Based on Sharif CE Curriculum (bs-ce-1400_2)'
+                    ? 'Based on Sharif CE Curriculum (bs-ce-1400)'
                     : 'مطابق چارت مصوب وزارت علوم و آیین‌نامه آموزش دانشگاه'}
                 </p>
               </div>
@@ -223,7 +223,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="hidden md:flex p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              title={lang === 'en' ? (darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode') : (darkMode ? 'تغییر به تم لایت' : 'تغییر به تم دارک')}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer"
             >
               {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
             </button>

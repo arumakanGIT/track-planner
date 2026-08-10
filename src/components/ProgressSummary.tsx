@@ -144,7 +144,7 @@ export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-emerald-500" />
-                  {lang === 'en' ? 'Tree / Core Courses' : 'دروس نمودار درختی (اجباری)'}
+                  {lang === 'en' ? 'Tree / Core Courses' : 'دروس پایه (اجباری)'}
                 </span>
                 <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
                   {stats.treeCreditsPassed} {stats.treeCreditsInProgress > 0 && <span className="text-emerald-400 font-normal">({stats.treeCreditsInProgress}+)</span>} / {stats.treeCreditsTotal}

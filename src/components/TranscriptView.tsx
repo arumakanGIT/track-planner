@@ -190,7 +190,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
             <div className="text-2xl font-black font-mono text-indigo-600 dark:text-indigo-400 mt-1">
               {typeof cumulativeGpa === 'number' ? cumulativeGpa.toFixed(2) : '--'}
             </div>
-            <div className="text-[10px] text-slate-400 mt-1 font-mono">
+            <div className="text-[10px] text-slate-400 mt-1 font-sans">
               {lang === 'en' ? 'out of 20.00' : 'از ۲۰ نمره‌ای'}
             </div>
           </div>
@@ -202,7 +202,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
             <div className="text-2xl font-black font-mono text-slate-900 dark:text-white mt-1">
               {totalGradedCredits}
             </div>
-            <div className="text-[10px] text-slate-400 mt-1 font-mono">
+            <div className="text-[10px] text-slate-400 mt-1 font-sans">
               {lang === 'en' ? `of ${totalPassedCredits} total passed credits` : `از مجموع ${totalPassedCredits} واحد پاس شده`}
             </div>
           </div>
@@ -214,7 +214,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
             <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-1">
               {totalGradePoints.toFixed(1)}
             </div>
-            <div className="text-[10px] text-slate-400 mt-1 font-mono">
+            <div className="text-[10px] text-slate-400 mt-1 font-sans">
               {lang === 'en' ? '(Grade × Credits)' : '(نمره × واحد)'}
             </div>
           </div>
@@ -242,7 +242,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
                   </span>
                 )
               ) : (
-                <span className="text-xs text-slate-400 font-mono">{lang === 'en' ? 'No grades recorded' : 'نمره‌ای ثبت نشده'}</span>
+                <span className="text-xs text-slate-400 font-medium">{lang === 'en' ? 'No grades recorded' : 'نمره‌ای ثبت نشده'}</span>
               )}
             </div>
           </div>
@@ -282,18 +282,18 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
                       <h3 className="font-bold text-sm text-slate-900 dark:text-white">
                         {lang === 'en' ? `Semester ${termNum} Transcript` : `کارنامه ترم ${termNum}`}
                       </h3>
-                      <p className="text-[11px] text-slate-500 font-mono">
+                      <p className="text-[11px] text-slate-500 font-sans">
                         {stats.termPassedCredits} {lang === 'en' ? 'passed credits' : 'واحد پاس شده'} / {stats.courses.reduce((a, b) => a + b.credits, 0)} {lang === 'en' ? 'enrolled' : 'واحد ثبت‌شده'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-left font-mono">
+                  <div className="text-left font-sans">
                     <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      {lang === 'en' ? 'Term GPA:' : 'معدل ترم:'} {typeof stats.semesterGpa === 'number' ? stats.semesterGpa.toFixed(2) : '--'}
+                      {lang === 'en' ? 'Term GPA:' : 'معدل ترم:'} <span className="font-mono">{typeof stats.semesterGpa === 'number' ? stats.semesterGpa.toFixed(2) : '--'}</span>
                     </div>
                     <div className="text-[10px] text-slate-500">
-                      {lang === 'en' ? 'Cum. GPA:' : 'معدل کل تا این ترم:'} {typeof stats.cumGpaUpToTerm === 'number' ? stats.cumGpaUpToTerm.toFixed(2) : '--'}
+                      {lang === 'en' ? 'Cum. GPA:' : 'معدل کل تا این ترم:'} <span className="font-mono">{typeof stats.cumGpaUpToTerm === 'number' ? stats.cumGpaUpToTerm.toFixed(2) : '--'}</span>
                     </div>
                     {stats.isProbation && (
                       <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 block mt-0.5">
@@ -432,7 +432,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
                     <h3 className="font-bold text-sm text-slate-900 dark:text-white">
                       {lang === 'en' ? 'Unassigned Courses' : 'دروس اخذشده/نمره‌دار بدون ترم مشخص'}
                     </h3>
-                    <p className="text-[11px] text-slate-500 font-mono">
+                    <p className="text-[11px] text-slate-500 font-sans">
                       {unassignedCourses.length} {lang === 'en' ? 'courses pending term assignment' : 'درس بدون تخصیص به ترم'}
                     </p>
                   </div>
@@ -458,7 +458,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
                             {lang === 'en' ? c.titleEn : c.titleFa}
                           </span>
                         </div>
-                        <div className="text-[10px] text-slate-500 font-mono">
+                        <div className="text-[10px] text-slate-500 font-sans">
                           {c.credits} {lang === 'en' ? 'credits' : 'واحد'}
                         </div>
                       </div>

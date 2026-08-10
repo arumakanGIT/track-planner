@@ -407,7 +407,7 @@ export const COURSES: Course[] = [
   // ================= SEMESTER 6 =================
   {
     id: '31119',
-    titleFa: 'آشنایی با ادبیات فارسی',
+    titleFa: 'فارسی عمومی (آشنایی با ادبیات فارسی)',
     titleEn: 'Persian Literature',
     credits: 3,
     type: 'general_core',
@@ -586,7 +586,7 @@ export const COURSES: Course[] = [
   },
   {
     id: '37127',
-    titleFa: 'آیین زندگی  ',
+    titleFa: 'آیین زندگی (اخلاق کاربردی)',
     titleEn: 'Life Norms (Applied Ethics)',
     credits: 2,
     type: 'general_core',

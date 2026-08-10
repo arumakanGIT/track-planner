@@ -174,11 +174,11 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               className={`px-4 py-2 font-bold rounded-xl transition whitespace-nowrap flex items-center gap-2 border ${
                 selectedTermIndex === idx
                   ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-xs'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50'
+                  : 'bg-indigo-50/70 dark:bg-slate-900 text-slate-700 dark:text-slate-400 border-indigo-200/80 dark:border-slate-800 hover:bg-indigo-100/80 dark:hover:bg-slate-800'
               }`}
             >
               <span>{lang === 'en' ? (sem.titleEn || `Term ${sem.termNumber}`) : sem.titleFa}</span>
-              <span className="text-[10px] opacity-80 font-mono font-normal">
+              <span className="text-[10px] opacity-80 font-sans font-normal">
                 ({semCredits} {lang === 'en' ? 'cr' : 'واحد'})
               </span>
             </button>
@@ -205,13 +205,13 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
               {/* Credit Cap Counter */}
               <div
-                className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl border text-xs font-sans font-bold flex items-center gap-1.5 ${
                   planCredits > 20
                     ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900'
                     : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
                 }`}
               >
-                <span>{lang === 'en' ? 'Credits:' : 'مجموع واحد:'} {planCredits} / 20</span>
+                <span>{lang === 'en' ? 'Credits:' : 'مجموع واحد:'} <span className="font-mono">{planCredits} / 20</span></span>
                 {planCredits > 20 && (
                   <span title={lang === 'en' ? 'Credit limit exceeded (max 20)' : 'سقف مجاز واحد (۲۰ واحد) فراتر رفته است'}>
                     ⚠️
@@ -243,7 +243,13 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                   return (
                     <div
                       key={cId}
-                      className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 flex items-center justify-between gap-3 hover:border-slate-300 transition"
+                      className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition ${
+                        currentStatus === 'PASSED'
+                          ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-950/20 dark:border-emerald-800'
+                          : currentStatus === 'IN_PROGRESS'
+                          ? 'bg-amber-50 border-amber-300 dark:bg-amber-950/20 dark:border-amber-800'
+                          : 'bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                      }`}
                     >
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -253,8 +259,8 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                           <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
                             {lang === 'en' ? course.titleEn : course.titleFa}
                           </span>
-                          <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                            {course.credits} {lang === 'en' ? 'cr' : 'واحد'}
+                          <span className="text-xs font-sans font-bold text-indigo-600 dark:text-indigo-400">
+                            <span className="font-mono">{course.credits}</span> {lang === 'en' ? 'cr' : 'واحد'}
                           </span>
                           <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                             {course.type === 'tree'

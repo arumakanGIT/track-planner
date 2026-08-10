@@ -63,7 +63,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ lang }) => {
       {/* Contact & Links */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs space-y-4">
         <div>
-          <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+          <h3 className={`text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 ${lang === 'en' ? 'uppercase tracking-wider' : ''}`}>
             {lang === 'en' ? 'Contact & Feedback' : 'ارتباط و پیشنهادات'}
           </h3>
           <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">

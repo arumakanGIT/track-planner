@@ -100,7 +100,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   : 'text-slate-600 dark:text-slate-400'
               }`}
             >
-              {lang === 'en' ? 'Tree Core Courses' : 'دروس نمودار درختی (پایه/اصلی)'}
+              {lang === 'en' ? 'Tree Core Courses' : 'دروس پایه'}
             </button>
             <button
               onClick={() => setActiveCategory('specialized')}
@@ -179,7 +179,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
               {st === 'UNLOCKED' && (lang === 'en' ? 'Unlocked & Ready' : 'قابل اخذ (پیش‌نیاز تکمیل)')}
             </button>
           ))}
-          <span className="text-xs text-slate-400 font-mono mr-auto">
+          <span className="text-xs text-slate-400 mr-auto font-medium">
             ({filteredCourses.length} {lang === 'en' ? 'courses' : 'درس'})
           </span>
         </div>
@@ -190,9 +190,9 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right rtl:text-right ltr:text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 uppercase font-semibold">
+            <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 font-semibold">
               <tr>
-                <th className="py-3 px-4 font-mono text-center">{lang === 'en' ? 'Code / ID' : 'کد / ID'}</th>
+                <th className="py-3 px-4 text-center">{lang === 'en' ? 'Code / ID' : 'کد / ID'}</th>
                 <th className="py-3 px-4">{lang === 'en' ? 'Course Title' : 'عنوان درس'}</th>
                 <th className="py-3 px-4 text-center">{lang === 'en' ? 'Credits' : 'واحد'}</th>
                 <th className="py-3 px-4">{lang === 'en' ? 'Category / Term' : 'نوع / ترم'}</th>
@@ -219,7 +219,15 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   return (
                     <tr
                       key={course.id}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                      className={`transition-colors ${
+                        status === 'PASSED'
+                          ? 'bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40'
+                          : status === 'IN_PROGRESS'
+                          ? 'bg-amber-50/70 hover:bg-amber-100/80 dark:bg-amber-950/20 dark:hover:bg-amber-950/40'
+                          : status === 'FAILED'
+                          ? 'bg-rose-50/70 hover:bg-rose-100/80 dark:bg-rose-950/20 dark:hover:bg-rose-950/40'
+                          : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'
+                      }`}
                     >
                       {/* Code */}
                       <td className="py-3 px-4 text-center font-mono font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
