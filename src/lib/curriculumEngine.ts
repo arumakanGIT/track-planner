@@ -76,11 +76,6 @@ export function getAssignedTerm(course: Course, progress: StudentProgress): numb
   if (override && override > 0) return override;
   // Default curriculum term
   if (course.term) return course.term;
-  // If student has taken or is currently taking it
-  const st = progress.courseStatuses[course.id];
-  if (st && st !== 'NOT_TAKEN') {
-    return course.type === 'specialized' ? 5 : course.type === 'foundation' ? 2 : 7;
-  }
   return null;
 }
 

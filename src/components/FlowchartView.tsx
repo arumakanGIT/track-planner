@@ -57,6 +57,9 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
   const [draggedCourseId, setDraggedCourseId] = useState<string | null>(null);
   const [dragOverTerm, setDragOverTerm] = useState<number | null>(null);
 
+  // Clear Chart Confirmation Modal state
+  const [showClearChartModal, setShowClearChartModal] = useState<boolean>(false);
+
   // Term Drawer / Management Panel state
   const [activeManageTerm, setActiveManageTerm] = useState<number | null>(null);
   const [panelSearchQuery, setPanelSearchQuery] = useState('');
@@ -593,15 +596,26 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
           </div>
         </div>
 
-        {/* Add Term Button Footer */}
+        {/* Add Term & Clear Chart Buttons Footer */}
         <div className="flex items-center justify-between pt-2">
-          <button
-            onClick={handleAddNewTerm}
-            className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{lang === 'en' ? 'Add Extra Term' : 'افزودن ترم جدید'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleAddNewTerm}
+              className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{lang === 'en' ? 'Add Extra Term' : 'افزودن ترم جدید'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowClearChartModal(true)}
+              className="px-4 py-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title={lang === 'en' ? 'Remove all courses from flowchart' : 'حذف تمام دروس از ترم‌های نمودار'}
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>{lang === 'en' ? 'Clear Flowchart' : 'پاکسازی'}</span>
+            </button>
+          </div>
 
           <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
             {lang === 'en' ? `${COURSES.length} Total Courses in Curriculum` : `${COURSES.length} درس کل در سامانه چارت`}
@@ -609,6 +623,52 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
         </div>
 
       </div>
+
+      {/* Clear Flowchart Confirmation Modal */}
+      {showClearChartModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 rounded-2xl shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                  {lang === 'en' ? 'Clear All Flowchart Courses?' : 'پاکسازی تمام دروس از نمودار؟'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  {lang === 'en'
+                    ? 'This will remove all assigned courses from flowchart semesters so you can build your own layout. Your bookmarked courses and completion status will remain intact.'
+                    : 'با این کار تمام دروس از ترم‌های نمودار حذف خواهند شد تا بتوانید چارت را به صورت دلخواه خود بچینید. دروس نشان‌شده و وضعیت‌های ثبت‌شده پاک نخواهند شد.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowClearChartModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                {lang === 'en' ? 'Cancel' : 'انصراف'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  COURSES.forEach((c) => {
+                    onUpdateTermOverride(c.id, 0);
+                  });
+                  setShowClearChartModal(false);
+                }}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{lang === 'en' ? 'Yes, Clear Flowchart' : 'بله، پاکسازی شود'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Interactive Semester Management Drawer / Modal */}
       {activeManageTerm !== null && (

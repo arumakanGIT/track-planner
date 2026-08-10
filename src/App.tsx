@@ -253,12 +253,7 @@ export default function App() {
           <p className="font-medium">
             {lang === 'en'
               ? 'Computer Engineering B.Sc. Curriculum Tracker & Specialization Planner'
-              : 'سامانه مدیریت و برنامه‌ریزی دروس و گرایش‌های کارشناسی مهندسی کامپیوتر'}
-          </p>
-          <p className="text-[11px] text-slate-400">
-            {lang === 'en'
-              ? 'Data extracted from official Program Curriculum PDF (bs-ce-1400_2) & Sharif CE Regulations'
-              : 'داده‌ها بر اساس مصوبه برنامه درسی دوره کارشناسی مهندسی کامپیوتر و آیین‌نامه‌های دانشگاه صنعت شریف'}
+              : 'سامانه برنامه‌ریزی دروس و گرایش‌های کارشناسی مهندسی کامپیوتر'}
           </p>
           <div className="pt-2 flex items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
             <a
