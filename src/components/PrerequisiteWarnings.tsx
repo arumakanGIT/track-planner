@@ -89,7 +89,7 @@ export const PrerequisiteWarnings: React.FC<PrerequisiteWarningsProps> = ({
               className="px-3 py-1.5 bg-amber-200 dark:bg-amber-900/80 text-amber-900 dark:text-amber-100 hover:bg-amber-300 dark:hover:bg-amber-900 rounded-xl font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
               <EyeOff className="w-4 h-4" />
-              <span>{lang === 'en' ? 'Ignore All in Floating Alert' : 'ایگنور کردن همه (بنر شناور)'}</span>
+              <span>{lang === 'en' ? 'Ignore All' : 'ایگنور کردن همه'}</span>
             </button>
           </div>
         )}
@@ -133,7 +133,7 @@ export const PrerequisiteWarnings: React.FC<PrerequisiteWarningsProps> = ({
                       {isIgnored && (
                         <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold flex items-center gap-1">
                           <EyeOff className="w-3 h-3" />
-                          <span>{lang === 'en' ? 'Ignored in floating alert' : 'ایگنور شده در هشدار شناور'}</span>
+                          <span>{lang === 'en' ? 'Ignored' : 'ایگنور شده'}</span>
                         </span>
                       )}
                     </div>
