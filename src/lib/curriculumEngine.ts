@@ -1,17 +1,19 @@
-import { COURSES, KNOWLEDGE_CLUSTERS } from '../data/curriculumData';
+import { COURSES, KNOWLEDGE_CLUSTERS, DEFAULT_MAJOR } from '../data/curriculumData';
 import {
   ClusterProgress,
   Course,
   CourseStatus,
   GraduationStats,
+  KnowledgeCluster,
+  MajorConfig,
   RuleValidation,
   StudentProgress,
 } from '../types';
 
 export const STORAGE_KEY = 'ce_curriculum_tracker_v1';
 
-export function getCourseById(id: string): Course | undefined {
-  return COURSES.find((c) => c.id === id);
+export function getCourseById(id: string, courses: Course[] = COURSES): Course | undefined {
+  return courses.find((c) => c.id === id);
 }
 
 export function getInitialProgress(): StudentProgress {
@@ -134,8 +136,10 @@ export function validateCourseRules(
  */
 export function calculateGraduationStats(
   statuses: Record<string, CourseStatus>,
-  grades: Record<string, number> = {}
+  grades: Record<string, number> = {},
+  majorConfig: MajorConfig = DEFAULT_MAJOR
 ): GraduationStats {
+  const req = majorConfig.degreeRequirement;
   let totalCreditsPassed = 0;
   let totalCreditsInProgress = 0;
 
@@ -161,7 +165,7 @@ export function calculateGraduationStats(
   let totalGradePoints = 0;
   let totalGradedCredits = 0;
 
-  COURSES.forEach((course) => {
+  majorConfig.courses.forEach((course) => {
     const status = statuses[course.id];
     const isPassed = status === 'PASSED';
     const isInProgress = status === 'IN_PROGRESS';
@@ -227,16 +231,19 @@ export function calculateGraduationStats(
       : 0;
 
   const specializedRequirementMet =
-    specializedCoursesPassedCount >= 7 && specializedCreditsPassed >= 21;
+    specializedCoursesPassedCount >= req.specializedElectiveMinCourses &&
+    specializedCreditsPassed >= req.specializedElectiveMinCredits;
 
-  const generalElectiveRequirementMet = generalElectiveCreditsPassed >= 13;
-  const generalCoreRequirementMet = generalCoreCreditsPassed >= 20;
+  const generalElectiveRequirementMet =
+    generalElectiveCreditsPassed >= req.generalElectiveMinCredits;
+  const generalCoreRequirementMet =
+    generalCoreCreditsPassed >= (req.generalCoreMinCredits || 20);
 
   const overallGpa =
     totalGradedCredits > 0 ? Math.round((totalGradePoints / totalGradedCredits) * 100) / 100 : undefined;
 
   const isGraduationEligible =
-    totalCreditsPassed >= 140 &&
+    totalCreditsPassed >= req.totalCredits &&
     treeCreditsPassed >= treeCreditsTotal &&
     foundationCreditsPassed >= foundationCreditsTotal &&
     specializedRequirementMet &&
@@ -274,9 +281,10 @@ export function calculateGraduationStats(
  * Calculate Progress across all 17 Knowledge Clusters
  */
 export function calculateClusterProgresses(
-  statuses: Record<string, CourseStatus>
+  statuses: Record<string, CourseStatus>,
+  clusters: KnowledgeCluster[] = KNOWLEDGE_CLUSTERS
 ): ClusterProgress[] {
-  return KNOWLEDGE_CLUSTERS.map((cluster) => {
+  return clusters.map((cluster) => {
     const totalCoursesCount = cluster.courseIds.length;
     let passedCoursesCount = 0;
     let inProgressCoursesCount = 0;

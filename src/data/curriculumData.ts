@@ -1314,3 +1314,23 @@ export const KNOWLEDGE_CLUSTERS: KnowledgeCluster[] = [
     iconName: 'Code',
   },
 ];
+
+import { createSharifCE1400 } from './majors/ce_1400';
+import { getSupportedDepartments as getDepts } from './majors';
+
+export const SHARIF_CE_1400 = createSharifCE1400(COURSES, KNOWLEDGE_CLUSTERS);
+export const DEFAULT_MAJOR = SHARIF_CE_1400;
+export const CURRENT_MAJOR = SHARIF_CE_1400;
+export const REGISTERED_MAJORS = [SHARIF_CE_1400];
+
+export function getMajorConfig(majorId?: string) {
+  if (!majorId) return DEFAULT_MAJOR;
+  return REGISTERED_MAJORS.find((m) => m.id === majorId) || DEFAULT_MAJOR;
+}
+
+export function getSupportedDepartments() {
+  return getDepts(REGISTERED_MAJORS);
+}
+
+
+

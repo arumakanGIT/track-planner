@@ -30,6 +30,36 @@ export interface KnowledgeCluster {
   iconName?: string;
 }
 
+export interface DegreeRequirement {
+  totalCredits: number;
+  specializedElectiveMinCourses: number;
+  specializedElectiveMinCredits: number;
+  generalElectiveMinCredits: number;
+  generalCoreMinCredits: number;
+}
+
+export interface DepartmentInfo {
+  id: string; // e.g. "ce"
+  titleFa: string; // e.g. "دانشکده مهندسی کامپیوتر"
+  titleEn: string; // e.g. "Department of Computer Engineering"
+}
+
+export interface MajorConfig {
+  id: string; // e.g. "ce_1400"
+  department: DepartmentInfo;
+  universityTitleFa: string;
+  universityTitleEn: string;
+  programTitleFa: string;
+  programTitleEn: string;
+  curriculumCode: string;
+  entryYear: string;
+  degreeRequirement: DegreeRequirement;
+  rulesSummaryFa: string[];
+  rulesSummaryEn: string[];
+  courses: Course[];
+  clusters: KnowledgeCluster[];
+}
+
 export interface StudentProgress {
   courseStatuses: Record<string, CourseStatus>; // courseId -> CourseStatus
   courseGrades?: Record<string, number>; // courseId -> grade (0-20)
