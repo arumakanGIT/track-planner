@@ -99,23 +99,23 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   const isPassed = status === 'PASSED';
 
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3.5 space-y-2 flex flex-col justify-between hover:bg-white/15 transition">
+    <div className="bg-white dark:bg-white/10 border border-indigo-200/80 dark:border-white/10 rounded-xl p-3.5 space-y-2 flex flex-col justify-between hover:border-indigo-400 dark:hover:bg-white/15 transition shadow-2xs">
       <div>
-        <div className="flex items-center justify-between text-[11px] font-mono text-indigo-200">
+        <div className="flex items-center justify-between text-[11px] font-mono text-indigo-700 dark:text-indigo-200">
           <span className="font-bold">{course.id}</span>
-          <span className="px-1.5 py-0.5 rounded bg-indigo-500/30 text-white font-sans">
+          <span className="px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-500/30 text-indigo-900 dark:text-white font-sans font-bold">
             {course.credits} {lang === 'en' ? 'credits' : 'واحد'}
           </span>
         </div>
-        <h3 className="font-bold text-sm text-white mt-1">
+        <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-1">
           {lang === 'en' ? course.titleEn : course.titleFa}
         </h3>
 
         <div className="mt-1.5">
           <p
-            className={`text-[11px] text-amber-200/95 leading-relaxed whitespace-pre-line transition-all ${
+            className={`text-[11px] text-amber-900 dark:text-amber-200/95 leading-relaxed whitespace-pre-line transition-all ${
               isExpanded
-                ? 'bg-black/25 p-2 rounded-lg border border-amber-200/20 text-amber-100 font-medium'
+                ? 'bg-amber-50 dark:bg-black/25 p-2 rounded-lg border border-amber-200 dark:border-amber-200/20 text-amber-950 dark:text-amber-100 font-medium'
                 : 'line-clamp-2'
             }`}
           >
@@ -126,7 +126,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-1 text-[10px] text-indigo-200 hover:text-white font-semibold underline underline-offset-2 flex items-center gap-0.5 focus:outline-hidden cursor-pointer"
+              className="mt-1 text-[10px] text-indigo-700 dark:text-indigo-200 hover:text-indigo-900 dark:hover:text-white font-semibold underline underline-offset-2 flex items-center gap-0.5 focus:outline-hidden cursor-pointer"
             >
               {isExpanded
                 ? lang === 'en' ? 'Show Less' : 'کمتر...'
@@ -136,7 +136,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 pt-2 border-t border-white/10 mt-2">
+      <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-white/10 mt-2">
         <button
           type="button"
           onClick={() => {
@@ -307,17 +307,17 @@ export const ClusterTracker: React.FC<ClusterTrackerProps> = ({
       )}
 
       {/* Smart Recommendations Section */}
-      <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 rounded-2xl p-5 text-white shadow-xl space-y-4 border border-indigo-800">
+      <div className="bg-gradient-to-r from-indigo-50/90 via-slate-50/90 to-indigo-100/70 dark:from-indigo-900 dark:via-slate-900 dark:to-indigo-950 rounded-2xl p-5 text-slate-900 dark:text-white shadow-sm dark:shadow-xl space-y-4 border border-indigo-200/80 dark:border-indigo-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-amber-400/20 text-amber-300 rounded-xl border border-amber-400/30">
+            <div className="p-2 bg-amber-400/20 text-amber-700 dark:text-amber-300 rounded-xl border border-amber-400/30">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {lang === 'en' ? 'Recommended Next Courses for Your Specialization' : 'پیشنهاد هوشمند دروس ترم بعد برای گرایش شما'}
               </h2>
-              <p className="text-xs text-indigo-200">
+              <p className="text-xs text-indigo-900/80 dark:text-indigo-200">
                 {lang === 'en'
                   ? 'Based on your selected tracks and fulfilled prerequisites'
                   : 'بر اساس بیشترین پیشرفت در گرایش‌های تخصصی و تکمیل پیش‌نیازها'}
@@ -327,7 +327,7 @@ export const ClusterTracker: React.FC<ClusterTrackerProps> = ({
         </div>
 
         {recommendations.length === 0 ? (
-          <p className="text-xs text-indigo-200 py-2">
+          <p className="text-xs text-indigo-900/80 dark:text-indigo-200 py-2">
             {lang === 'en' ? 'All recommended courses in this track are already completed!' : 'تمام دروس پیشنهادی برای گرایش انتخابی گذرانده شده‌اند!'}
           </p>
         ) : (

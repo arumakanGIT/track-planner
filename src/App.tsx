@@ -59,15 +59,96 @@ export default function App() {
   // Calculate graduation statistics
   const stats = calculateGraduationStats(progress.courseStatuses, progress.courseGrades);
 
-  // Calculate total warning count
-  let warningCount = 0;
+  // Calculate warning counts
+  let warningCount = 0; // Total violations count for header badge
+  let unignoredWarningCount = 0; // Violations count excluding ignored ones for floating button
+  const ignoredSet = new Set(progress.ignoredWarningCourseIds || []);
+
   COURSES.forEach((course) => {
     const st = progress.courseStatuses[course.id] || 'NOT_TAKEN';
     if (st === 'PASSED' || st === 'IN_PROGRESS') {
       const warnings = validateCourseRules(course, progress.courseStatuses);
-      if (warnings.length > 0) warningCount += warnings.length;
+      if (warnings.length > 0) {
+        warningCount += warnings.length;
+        if (!ignoredSet.has(course.id)) {
+          unignoredWarningCount += warnings.length;
+        }
+      }
     }
   });
+
+  const handleToggleIgnoreWarning = (courseId: string) => {
+    setProgress((prev) => {
+      const current = prev.ignoredWarningCourseIds || [];
+      const updated = current.includes(courseId)
+        ? current.filter((id) => id !== courseId)
+        : [...current, courseId];
+      return { ...prev, ignoredWarningCourseIds: updated };
+    });
+  };
+
+  const handlePassPrerequisitesForCourse = (courseId: string) => {
+    const course = COURSES.find((c) => c.id === courseId);
+    if (!course) return;
+    const warnings = validateCourseRules(course, progress.courseStatuses);
+    const missingIds = new Set<string>();
+    warnings.forEach((w) => {
+      w.missingPrereqs.forEach((id) => missingIds.add(id));
+      w.missingCoreqs.forEach((id) => missingIds.add(id));
+    });
+
+    if (missingIds.size === 0) return;
+
+    setProgress((prev) => {
+      const newStatuses = { ...prev.courseStatuses };
+      missingIds.forEach((id) => {
+        newStatuses[id] = 'PASSED';
+      });
+      return { ...prev, courseStatuses: newStatuses };
+    });
+  };
+
+  const handlePassAllPrerequisites = () => {
+    const missingIds = new Set<string>();
+    COURSES.forEach((course) => {
+      const st = progress.courseStatuses[course.id] || 'NOT_TAKEN';
+      if (st === 'PASSED' || st === 'IN_PROGRESS') {
+        const warnings = validateCourseRules(course, progress.courseStatuses);
+        warnings.forEach((w) => {
+          w.missingPrereqs.forEach((id) => missingIds.add(id));
+          w.missingCoreqs.forEach((id) => missingIds.add(id));
+        });
+      }
+    });
+
+    if (missingIds.size === 0) return;
+
+    setProgress((prev) => {
+      const newStatuses = { ...prev.courseStatuses };
+      missingIds.forEach((id) => {
+        newStatuses[id] = 'PASSED';
+      });
+      return { ...prev, courseStatuses: newStatuses };
+    });
+  };
+
+  const handleIgnoreAllWarnings = () => {
+    const violatedCourseIds: string[] = [];
+    COURSES.forEach((course) => {
+      const st = progress.courseStatuses[course.id] || 'NOT_TAKEN';
+      if (st === 'PASSED' || st === 'IN_PROGRESS') {
+        const warnings = validateCourseRules(course, progress.courseStatuses);
+        if (warnings.length > 0) {
+          violatedCourseIds.push(course.id);
+        }
+      }
+    });
+
+    setProgress((prev) => ({
+      ...prev,
+      ignoredWarningCourseIds: Array.from(new Set([...(prev.ignoredWarningCourseIds || []), ...violatedCourseIds])),
+    }));
+  };
 
   const handleUpdateStatus = (courseId: string, status: CourseStatus) => {
     setProgress((prev) => {
@@ -302,6 +383,10 @@ export default function App() {
           progress={progress}
           onClose={() => setShowWarningsModal(false)}
           onOpenCourseModal={setSelectedModalCourse}
+          onToggleIgnoreWarning={handleToggleIgnoreWarning}
+          onPassPrerequisitesForCourse={handlePassPrerequisitesForCourse}
+          onPassAllPrerequisites={handlePassAllPrerequisites}
+          onIgnoreAllWarnings={handleIgnoreAllWarnings}
           lang={lang}
         />
       )}
@@ -340,13 +425,13 @@ export default function App() {
       )}
 
       {/* Persistent Prerequisite Warning Floating Button */}
-      {warningCount > 0 && !showWarningsModal && (
+      {unignoredWarningCount > 0 && !showWarningsModal && (
         <button
           onClick={() => setShowWarningsModal(true)}
-          className="fixed bottom-6 left-6 z-40 bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs transition animate-bounce border border-amber-300"
+          className="fixed bottom-6 left-6 z-40 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 text-xs transition animate-bounce border border-amber-300 cursor-pointer"
         >
           <span>⚠️</span>
-          <span>{lang === 'en' ? `${warningCount} Prerequisite Alert(s)` : `${warningCount} هشدار پیش‌نیاز`}</span>
+          <span>{lang === 'en' ? `${unignoredWarningCount} Prerequisite Alert(s)` : `${unignoredWarningCount} هشدار پیش‌نیاز`}</span>
         </button>
       )}
 

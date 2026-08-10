@@ -1,3 +1,71 @@
 @import "tailwindcss";
 
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
+
+@font-face {
+  font-family: 'Alibaba';
+  src: url('https://cdn.jsdelivr.net/gh/fontiran/alibaba/Woff2/Alibaba-Regular.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/fontiran/alibaba/Woff/Alibaba-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alibaba';
+  src: url('https://cdn.jsdelivr.net/gh/fontiran/alibaba/Woff2/Alibaba-Medium.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/fontiran/alibaba/Woff/Alibaba-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alibaba';
+  src: url('https://cdn.jsdelivr.net/gh/fontiran/alibaba/Woff2/Alibaba-Bold.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/fontiran/alibaba/Woff/Alibaba-Bold.woff') format('woff');
+  font-weight: 600 700 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  font-family: 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  font-family: 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f7fa;
+}
+
+.dark body {
+  background-color: #020617;
+}
+
+/* Persian headings, titles, and bold texts use Alibaba font */
+h1, h2, h3, h4, h5, h6,
+.font-bold, .font-extrabold, .font-black, .font-semibold {
+  font-family: 'Alibaba', 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Standard body text, descriptions, inputs, buttons fallback to Vazirmatn */
+p, span, div, input, select, textarea, button, a, td, th {
+  font-family: 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Re-apply Alibaba font for elements with bold/semibold font weight classes */
+p.font-bold, p.font-semibold, p.font-extrabold, p.font-black,
+span.font-bold, span.font-semibold, span.font-extrabold, span.font-black,
+div.font-bold, div.font-semibold, div.font-extrabold, div.font-black,
+button.font-bold, button.font-semibold,
+a.font-bold, a.font-semibold,
+td.font-bold, th.font-bold {
+  font-family: 'Alibaba', 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Ensure font-mono retains monospace styling for IDs and numbers */
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}

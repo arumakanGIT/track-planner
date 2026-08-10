@@ -41,15 +41,15 @@ export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
         <div id="overall-graduation-status-card" className="space-y-4 bg-slate-50/60 dark:bg-slate-950/30 p-4 sm:p-5 rounded-3xl border border-slate-200/60 dark:border-slate-800">
           
           {/* Top Banner: Graduation Status */}
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-white to-slate-50/90 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white border border-indigo-200/80 dark:border-indigo-900/50 shadow-xs dark:shadow-lg">
             
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${stats.isGraduationEligible ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'}`}>
+              <div className={`p-3 rounded-xl ${stats.isGraduationEligible ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30'}`}>
                 {stats.isGraduationEligible ? <Trophy className="w-7 h-7 animate-bounce" /> : <Award className="w-7 h-7" />}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
                     {stats.isGraduationEligible
                       ? (lang === 'en' ? 'Graduation Requirements Satisfied!' : 'شرایط فارغ‌التحصیلی احراز شد!')
                       : (lang === 'en' ? 'Degree Progress Status (B.Sc. Computer Engineering)' : 'وضعیت کلی فارغ‌التحصیلی (کارشناسی مهندسی کامپیوتر)')}
@@ -60,7 +60,7 @@ export const ProgressSummary: React.FC<ProgressSummaryProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-300 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
                   {lang === 'en'
                     ? `${stats.totalCreditsPassed} of 140 total credits completed (${Math.max(0, 140 - stats.totalCreditsPassed)} remaining)`
                     : `${stats.totalCreditsPassed} واحد از ۱۴۰ واحد کل گذرانده شده (${Math.max(0, 140 - stats.totalCreditsPassed)} واحد باقیمانده)`}

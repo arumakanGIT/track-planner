@@ -65,6 +65,7 @@ export interface StudentProgress {
   courseGrades?: Record<string, number>; // courseId -> grade (0-20)
   courseTermOverrides?: Record<string, number>; // courseId -> term number override (1..8+)
   bookmarkedCourseIds?: string[]; // courseIds marked/pinned by student
+  ignoredWarningCourseIds?: string[]; // courseIds whose warnings are ignored for bottom floating alert
   targetClusterId?: string; // Legacy single cluster target
   targetClusterIds?: string[]; // Multi-select target clusters
   plannedSemesters: PlannedSemester[];

@@ -175,7 +175,8 @@ export const Header: React.FC<HeaderProps> = ({
             {warningCount > 0 && (
               <button
                 onClick={onOpenWarnings}
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition cursor-pointer"
+                title={lang === 'en' ? 'Prerequisite Violation Alerts' : 'مشاهده هشدارهای پیش‌نیاز'}
               >
                 <span>⚠️</span>
                 <span>{lang === 'en' ? `${warningCount} Alert(s)` : `${warningCount} هشدار پیش‌نیاز`}</span>

@@ -26,41 +26,41 @@ export const AcademicRulesView: React.FC<AcademicRulesViewProps> = ({ lang }) =>
     <div className="space-y-6">
       
       {/* Banner / Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-3xl shadow-xl border border-indigo-900/50 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-indigo-50/90 via-white to-slate-50/90 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-white p-6 rounded-3xl shadow-sm dark:shadow-xl border border-indigo-200/80 dark:border-indigo-900/50 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-2 max-w-3xl">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-indigo-500/20 text-indigo-300 rounded-xl border border-indigo-500/30">
+              <div className="p-2 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 rounded-xl border border-indigo-500/30">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <span className="text-xs font-mono tracking-wider font-bold text-indigo-400 uppercase">
+              <span className="text-xs font-mono tracking-wider font-bold text-indigo-700 dark:text-indigo-400 uppercase">
                 {lang === 'en' ? 'Official Curriculum Guidelines' : 'دستورالعمل‌ها و آیین‌نامه‌های آموزشی'}
               </span>
             </div>
-            <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">
+            <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
               {lang === 'en'
                 ? 'Academic Rules, Prerequisites & Curriculum Notes'
                 : 'قوانین و نکات مهم آموزشی و آیین‌نامه مقطع کارشناسی'}
             </h2>
-            <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               {lang === 'en'
                 ? 'Comprehensive guide to course load limits, probation conditions, general education groups, prerequisite rules, and graduation requirements based on Sharif CE regulations.'
                 : 'راهنمای جامع آیین‌نامه آموزشی، سقف مجاز واحدها، شرایط مشروطی، گروه‌بندی دروس عمومی، قوانین پیش‌نیاز/همنیاز و ضوابط فارغ‌التحصیلی دانشگاه شریف.'}
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 shrink-0 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-xs">
-            <div className="flex items-center gap-2 text-emerald-300 font-bold">
+          <div className="flex flex-col gap-2 shrink-0 bg-white/80 dark:bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-indigo-100 dark:border-white/15 text-xs shadow-2xs">
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold">
               <CheckCircle2 className="w-4 h-4" />
               <span>{lang === 'en' ? '140 Total Graduation Credits' : 'مجموع ۱۴۰ واحد فارغ‌التحصیلی'}</span>
             </div>
-            <div className="flex items-center gap-2 text-amber-300 font-bold">
+            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-bold">
               <Clock className="w-4 h-4" />
               <span>{lang === 'en' ? 'Max 8 Regular Terms' : 'سقف مجاز سنوات: ۸ ترم'}</span>
             </div>
-            <div className="flex items-center gap-2 text-indigo-300 font-bold">
+            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-bold">
               <Award className="w-4 h-4" />
               <span>{lang === 'en' ? 'Min Cumulative GPA: 12.00' : 'حداقل معدل کل فارغ‌التحصیلی: ۱۲.۰۰'}</span>
             </div>

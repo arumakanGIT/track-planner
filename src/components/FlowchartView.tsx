@@ -392,10 +392,10 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                 >
                   
                   {/* Term Header */}
-                  <div className={`p-2.5 rounded-xl text-center shadow-xs flex flex-col items-center justify-between gap-1 transition-all ${
+                  <div className={`p-2.5 rounded-xl text-center shadow-2xs flex flex-col items-center justify-between gap-1 transition-all border ${
                     isTargetDrop
-                      ? 'bg-indigo-600 text-white ring-2 ring-indigo-400'
-                      : 'bg-slate-800 dark:bg-slate-900 text-white'
+                      ? 'bg-indigo-600 text-white border-indigo-500 ring-2 ring-indigo-400'
+                      : 'bg-indigo-50/90 dark:bg-slate-900 text-indigo-950 dark:text-white border-indigo-200/80 dark:border-slate-800'
                   }`}>
                     <div className="flex items-center justify-between w-full">
                       <span className="font-bold text-xs">
@@ -403,13 +403,13 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                       </span>
                       <button
                         onClick={() => setActiveManageTerm(termNum)}
-                        className="p-1 hover:bg-slate-700 dark:hover:bg-slate-800 text-indigo-300 rounded-lg transition text-[10px] font-semibold flex items-center gap-0.5"
+                        className="p-1 hover:bg-indigo-100 dark:hover:bg-slate-800 text-indigo-700 dark:text-indigo-300 rounded-lg transition text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
                         title="مدیریت و افزودن درس به این ترم"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <div className="text-[10px] text-slate-300 font-mono">
+                    <div className="text-[10px] text-indigo-700 dark:text-slate-300 font-mono font-medium">
                       {termCredits} {lang === 'en' ? 'Credits' : 'واحد'}
                     </div>
                   </div>
