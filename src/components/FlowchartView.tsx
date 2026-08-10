@@ -272,7 +272,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                 <Bookmark className="w-3.5 h-3.5 fill-slate-950" />
               </div>
               <span className="font-bold text-xs text-amber-950 dark:text-amber-200">
-                {lang === 'en' ? 'Bookmarked Courses' : 'دروس نشان‌شده (مارک‌شده)'} ({bookmarkedCourses.length})
+                {lang === 'en' ? 'Bookmarked Courses' : 'دروس نشان‌شده'} ({bookmarkedCourses.length})
               </span>
             </div>
             <span className="text-[10px] text-amber-800/80 dark:text-amber-300/80 font-medium">

@@ -186,57 +186,6 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
 
       </div>
 
-      {/* Bookmarked Courses Banner Section */}
-      {bookmarkedCourses.length > 0 && activeCategory !== 'bookmarked' && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-slate-900 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/60 shadow-xs space-y-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-amber-500 text-slate-950 rounded-lg">
-                <Bookmark className="w-4 h-4 fill-slate-950" />
-              </div>
-              <h3 className="font-bold text-xs text-amber-950 dark:text-amber-200">
-                {lang === 'en' ? 'Bookmarked Courses' : 'دروس نشان‌شده (مارک‌شده)'} ({bookmarkedCourses.length})
-              </h3>
-            </div>
-            <button
-              onClick={() => setActiveCategory('bookmarked')}
-              className="text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline"
-            >
-              {lang === 'en' ? 'View all bookmarked' : 'مشاهده همه نشان‌شده‌ها'}
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {bookmarkedCourses.map((c) => (
-              <div
-                key={c.id}
-                onClick={() => onOpenCourseModal(c)}
-                className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/80 flex items-center gap-2 text-xs shrink-0 cursor-pointer hover:border-amber-400 transition"
-              >
-                <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300">
-                  {c.id}
-                </span>
-                <span className="font-bold text-slate-900 dark:text-slate-100 max-w-[140px] truncate">
-                  {lang === 'en' ? c.titleEn : c.titleFa}
-                </span>
-                {onToggleBookmark && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleBookmark(c.id);
-                    }}
-                    className="text-amber-500 hover:text-rose-500 transition p-0.5"
-                    title={lang === 'en' ? 'Remove bookmark' : 'حذف نشان'}
-                  >
-                    <Bookmark className="w-3.5 h-3.5 fill-current" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Courses Checklist Table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">

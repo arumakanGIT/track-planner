@@ -232,6 +232,7 @@ export default function App() {
             progress={progress}
             onUpdateStatus={handleUpdateStatus}
             onToggleTargetCluster={handleToggleTargetCluster}
+            onToggleBookmark={handleToggleBookmark}
             onOpenCourseModal={setSelectedModalCourse}
             lang={lang}
           />

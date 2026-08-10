@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BarChart3,
+  Bookmark,
   Bot,
   Brain,
   Briefcase,
@@ -40,6 +41,7 @@ interface ClusterTrackerProps {
   progress: StudentProgress;
   onUpdateStatus: (courseId: string, status: CourseStatus) => void;
   onToggleTargetCluster: (clusterId: string) => void;
+  onToggleBookmark?: (courseId: string) => void;
   onOpenCourseModal: (course: Course) => void;
   lang: 'fa' | 'en' | 'dual';
 }
@@ -71,7 +73,10 @@ interface RecommendationCardProps {
   reasonEn: string;
   clusterTitleFa: string;
   lang: 'fa' | 'en' | 'dual';
+  status: CourseStatus;
+  isBookmarked: boolean;
   onUpdateStatus: (courseId: string, status: CourseStatus) => void;
+  onToggleBookmark?: (courseId: string) => void;
   onOpenCourseModal: (course: Course) => void;
 }
 
@@ -80,12 +85,18 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   reasonFa,
   reasonEn,
   lang,
+  status,
+  isBookmarked,
   onUpdateStatus,
+  onToggleBookmark,
   onOpenCourseModal,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const reasonText = lang === 'en' ? reasonEn : reasonFa;
   const isLong = reasonText.length > 55 || reasonText.includes('\n');
+
+  const isInProgress = status === 'IN_PROGRESS';
+  const isPassed = status === 'PASSED';
 
   return (
     <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3.5 space-y-2 flex flex-col justify-between hover:bg-white/15 transition">
@@ -128,12 +139,65 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
       <div className="flex items-center gap-2 pt-2 border-t border-white/10 mt-2">
         <button
           type="button"
-          onClick={() => onUpdateStatus(course.id, 'IN_PROGRESS')}
-          className="flex-1 py-1.5 px-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 cursor-pointer"
+          onClick={() => {
+            if (isInProgress) {
+              onUpdateStatus(course.id, 'NOT_TAKEN');
+            } else if (!isPassed) {
+              onUpdateStatus(course.id, 'IN_PROGRESS');
+            }
+          }}
+          disabled={isPassed}
+          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 cursor-pointer ${
+            isInProgress
+              ? 'bg-emerald-600/90 text-white shadow-xs hover:bg-emerald-700 opacity-90'
+              : isPassed
+              ? 'bg-white/10 text-emerald-300 cursor-not-allowed opacity-60'
+              : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+          }`}
+          title={
+            isInProgress
+              ? (lang === 'en' ? 'Click to remove from current term' : 'برای لغو اخذ کلیک کنید')
+              : isPassed
+              ? (lang === 'en' ? 'Passed' : 'پاس شده')
+              : (lang === 'en' ? 'Mark as In Progress' : 'افزودن به ترم جاری')
+          }
         >
-          <Plus className="w-3.5 h-3.5" />
-          <span>{lang === 'en' ? 'Mark as In Progress' : 'افزودن به ترم جاری'}</span>
+          {isInProgress ? (
+            <>
+              <CheckCircle className="w-3.5 h-3.5 text-white" />
+              <span>{lang === 'en' ? 'In Current Term' : 'در حال اخذ (ترم جاری)'}</span>
+            </>
+          ) : isPassed ? (
+            <>
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
+              <span>{lang === 'en' ? 'Passed' : 'پاس شده'}</span>
+            </>
+          ) : (
+            <>
+              <Plus className="w-3.5 h-3.5" />
+              <span>{lang === 'en' ? 'Mark as In Progress' : 'افزودن به ترم جاری'}</span>
+            </>
+          )}
         </button>
+
+        {onToggleBookmark && (
+          <button
+            type="button"
+            onClick={() => onToggleBookmark(course.id)}
+            className={`p-1.5 rounded-lg transition cursor-pointer ${
+              isBookmarked
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={
+              isBookmarked
+                ? (lang === 'en' ? 'Unmark course' : 'حذف نشان')
+                : (lang === 'en' ? 'Bookmark course' : 'نشان‌کردن')
+            }
+          >
+            <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
+          </button>
+        )}
 
         <button
           type="button"
@@ -152,11 +216,14 @@ export const ClusterTracker: React.FC<ClusterTrackerProps> = ({
   progress,
   onUpdateStatus,
   onToggleTargetCluster,
+  onToggleBookmark,
   onOpenCourseModal,
   lang,
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [activeInfoCluster, setActiveInfoCluster] = useState<string | null>(null);
+
+  const bookmarkedIds = progress.bookmarkedCourseIds || [];
 
   // Active target cluster IDs array
   const targetClusterIds = progress.targetClusterIds || (progress.targetClusterId ? [progress.targetClusterId] : []);
@@ -273,7 +340,10 @@ export const ClusterTracker: React.FC<ClusterTrackerProps> = ({
                 reasonEn={reasonEn}
                 clusterTitleFa={clusterTitleFa}
                 lang={lang}
+                status={progress.courseStatuses[course.id] || 'NOT_TAKEN'}
+                isBookmarked={bookmarkedIds.includes(course.id)}
                 onUpdateStatus={onUpdateStatus}
+                onToggleBookmark={onToggleBookmark}
                 onOpenCourseModal={onOpenCourseModal}
               />
             ))}
