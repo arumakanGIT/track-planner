@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AlertTriangle,
   Award,
@@ -65,8 +65,26 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
 
   const [customTermCount, setCustomTermCount] = useState<number>(maxOverrideTerm);
 
+  // Detect mobile / tablet touch device or small screen for showing term selector selectbox
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isSmallScreen = window.innerWidth < 1024;
+    return hasTouch || isSmallScreen;
+  });
+
+  useEffect(() => {
+    const checkDevice = () => {
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth < 1024;
+      setIsMobileOrTablet(hasTouch || isSmallScreen);
+    };
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+
   // Keep customTermCount in sync if new max override term is added anywhere
-  React.useEffect(() => {
+  useEffect(() => {
     setCustomTermCount((prev) => Math.max(prev, maxOverrideTerm));
   }, [maxOverrideTerm]);
 
@@ -366,7 +384,10 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                             }}
                             onMouseEnter={() => setHoveredCourseId(course.id)}
                             onMouseLeave={() => setHoveredCourseId(null)}
-                            onClick={() => setSelectedCourseId(course.id)}
+                            onClick={() => {
+                              setSelectedCourseId(course.id);
+                              onOpenCourseModal(course);
+                            }}
                             className={`p-2.5 rounded-xl border transition-all duration-200 shadow-2xs relative group cursor-grab active:cursor-grabbing ${bgClass} ${borderClass} ${
                               !matchesCluster || !matchesSearch ? 'opacity-30 hover:opacity-100' : 'opacity-100'
                             } ${isBeingDragged ? 'opacity-40 scale-95 border-dashed border-indigo-500' : ''}`}
@@ -397,7 +418,7 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                             </div>
 
                             {/* Term Selector Override & Quick Status */}
-                            <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-700/60 text-[10px]">
+                            <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-700/60 text-[10px] gap-1 flex-wrap">
                               
                               {/* Quick Status Button */}
                               <button
@@ -430,6 +451,40 @@ export const FlowchartView: React.FC<FlowchartViewProps> = ({
                                     ? (lang === 'en' ? 'Failed' : 'افتاده')
                                     : (lang === 'en' ? 'Not Taken' : 'اخذ نشده')}
                                 </span>
+                              </button>
+
+                              {/* Term Selector dropdown for Mobile / Tablet */}
+                              {isMobileOrTablet && (
+                                <select
+                                  value={termNum}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    const newTerm = parseInt(e.target.value, 10);
+                                    onUpdateTermOverride(course.id, newTerm);
+                                  }}
+                                  className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 rounded-md text-[10px] font-mono font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                                  title={lang === 'en' ? 'Change semester' : 'تغییر ترم درس'}
+                                >
+                                  {Array.from({ length: Math.max(8, customTermCount) }, (_, idx) => idx + 1).map((t) => (
+                                    <option key={t} value={t}>
+                                      {lang === 'en' ? `T${t}` : `ترم ${t}`}
+                                    </option>
+                                  ))}
+                                  <option value={0}>{lang === 'en' ? 'Remove' : 'حذف'}</option>
+                                </select>
+                              )}
+
+                              {/* Details Info Modal Button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenCourseModal(course);
+                                }}
+                                className="p-1 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md transition hover:bg-indigo-50 dark:hover:bg-indigo-950/50 flex items-center gap-0.5 shrink-0"
+                                title={lang === 'en' ? 'Course details' : 'جزئیات کامل درس'}
+                              >
+                                <Info className="w-3.5 h-3.5" />
                               </button>
 
                             </div>
